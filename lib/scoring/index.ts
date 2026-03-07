@@ -1,16 +1,22 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { getCachedJudgment, storeCachedJudgment } from "@/lib/data/repository";
+import {
+  getCachedJudgment,
+  isLlmRateLimited,
+  storeCachedJudgment,
+} from "@/lib/data/repository";
 import { scoreWithLLM } from "@/lib/scoring/llm";
 import { scoreWithRules } from "@/lib/scoring/rule-based";
 import type { ScoreResult, StudyQuestion } from "@/lib/types";
 
 export async function gradeAnswer({
   supabase,
+  userId,
   question,
   submittedAnswer,
 }: {
   supabase: SupabaseClient;
+  userId: string;
   question: StudyQuestion;
   submittedAnswer: string;
 }): Promise<ScoreResult> {
@@ -28,6 +34,15 @@ export async function gradeAnswer({
 
   if (cached) {
     return cached;
+  }
+
+  if (await isLlmRateLimited(supabase, userId)) {
+    return {
+      ...ruleResult,
+      feedbackJa:
+        "判定回数が短時間に集中しているため、追加のAI判定を一時的に止めています。少し時間を空けて再度試してください。",
+      errorTags: [...ruleResult.errorTags, "llm_rate_limited"],
+    };
   }
 
   const llmResult = await scoreWithLLM({ question, submittedAnswer });

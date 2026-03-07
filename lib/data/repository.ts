@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { QUESTION_BANK, getQuestionById } from "@/lib/data/idioms";
-import type { LevelBand } from "@/lib/types";
+import type { LevelBand, QuestionType } from "@/lib/types";
 import { computeReviewIntervalDays } from "@/lib/review/schedule";
 import type {
   DailyHistory,
@@ -31,9 +31,10 @@ export async function selectLearnQuestion(
   supabase: SupabaseClient,
   userId: string,
   levelBands: LevelBand[],
+  questionType: QuestionType,
 ) {
   const filteredQuestionBank = QUESTION_BANK.filter((question) =>
-    levelBands.includes(question.levelBand),
+    levelBands.includes(question.levelBand) && question.questionType === questionType,
   );
 
   if (filteredQuestionBank.length === 0) {
@@ -214,7 +215,7 @@ export async function getHistoryData(
 
       return {
         questionId: answer.question_id,
-        promptJa: question?.promptJa ?? "不明",
+        prompt: question?.prompt ?? "不明",
         correctAnswer: question?.correctAnswer ?? "-",
         answeredAt: answer.answered_at,
         judgment: answer.judgment,
@@ -243,6 +244,26 @@ export async function getRecentAnswers(
     ...answer,
     question: getQuestionById(answer.question_id),
   }));
+}
+
+export async function isLlmRateLimited(
+  supabase: SupabaseClient,
+  userId: string,
+) {
+  const threshold = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const { count, error } = await supabase
+    .from("user_answers")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("source", "llm")
+    .gte("answered_at", threshold);
+
+  if (error) {
+    console.error("Failed to check LLM rate limit", error);
+    return false;
+  }
+
+  return (count ?? 0) >= 20;
 }
 
 export async function getCachedJudgment(

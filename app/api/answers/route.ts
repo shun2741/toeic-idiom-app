@@ -49,6 +49,7 @@ export async function POST(request: Request) {
   try {
     const result = await gradeAnswer({
       supabase,
+      userId: user.id,
       question,
       submittedAnswer: payload.answer,
     });

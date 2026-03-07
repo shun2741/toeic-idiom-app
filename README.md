@@ -63,6 +63,10 @@ OpenAI を使う場合だけ以下も設定してください。
 
 アプリ本体にはローカル問題バンクも入っているため、将来的に seed を拡張しやすい構成です。
 
+既存の Supabase 環境で和訳問題を追加する場合は、追加で
+`[20260307_add_translation_questions.sql](/Users/shun/Desktop/codex-app/toeic-idiom-app/supabase/migrations/20260307_add_translation_questions.sql)`
+も実行してください。
+
 ### 4. Google ログインを有効化
 
 Supabase Dashboard で Google Provider を設定し、以下のコールバック URL を登録してください。

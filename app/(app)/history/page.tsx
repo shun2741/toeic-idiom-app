@@ -66,7 +66,7 @@ export default async function HistoryPage() {
             recentMistakes.map((mistake) => (
               <div key={`${mistake.questionId}-${mistake.answeredAt}`} className="rounded-2xl border border-border bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-semibold text-slate-950">{mistake.promptJa}</p>
+                  <p className="font-semibold text-slate-950">{mistake.prompt}</p>
                   <Badge
                     className={
                       mistake.judgment === "almost_correct"

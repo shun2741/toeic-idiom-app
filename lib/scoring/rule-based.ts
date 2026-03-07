@@ -1,4 +1,4 @@
-import { normalizeAnswer } from "@/lib/scoring/normalize";
+import { normalizeAnswer, normalizeJapaneseAnswer } from "@/lib/scoring/normalize";
 import type { ScoreResult, StudyQuestion } from "@/lib/types";
 
 type RuleScoreResult = ScoreResult & {
@@ -57,6 +57,10 @@ export function scoreWithRules(
   question: StudyQuestion,
   submittedAnswer: string,
 ): RuleScoreResult {
+  if (question.questionType === "idiom_to_ja") {
+    return scoreJapaneseTranslationWithRules(question, submittedAnswer);
+  }
+
   const normalizedAnswer = normalizeAnswer(submittedAnswer);
   const accepted = Array.from(
     new Set([question.correctAnswer, ...question.acceptedAnswers].map(normalizeAnswer)),
@@ -174,5 +178,72 @@ export function scoreWithRules(
     false,
     `不正解です。正答は「${question.correctAnswer}」です。`,
     ["different_expression"],
+  );
+}
+
+function scoreJapaneseTranslationWithRules(
+  question: StudyQuestion,
+  submittedAnswer: string,
+): RuleScoreResult {
+  const normalizedAnswer = normalizeJapaneseAnswer(submittedAnswer);
+  const accepted = Array.from(
+    new Set([question.correctAnswer, ...question.acceptedAnswers].map(normalizeJapaneseAnswer)),
+  );
+
+  if (!normalizedAnswer) {
+    return buildIncorrectResult(
+      question,
+      normalizedAnswer,
+      false,
+      "未入力です。意味が伝わる自然な日本語で入力してみましょう。",
+      ["blank_answer"],
+    );
+  }
+
+  if (accepted.includes(normalizedAnswer)) {
+    return {
+      isCorrect: true,
+      score: 1,
+      judgment: "correct",
+      correctAnswer: question.correctAnswer,
+      feedbackJa: "正解です。自然な和訳として問題ありません。",
+      errorTags: [],
+      normalizedAnswer,
+      shouldEscalate: false,
+      source: "rule",
+    };
+  }
+
+  const containsMeaning = accepted.some(
+    (candidate) =>
+      candidate.includes(normalizedAnswer) || normalizedAnswer.includes(candidate),
+  );
+
+  if (containsMeaning) {
+    return buildIncorrectResult(
+      question,
+      normalizedAnswer,
+      true,
+      "意味は近そうです。表現の自然さも含めて追加で判定します。",
+      ["needs_semantic_check"],
+    );
+  }
+
+  if (normalizedAnswer.length <= 2) {
+    return buildIncorrectResult(
+      question,
+      normalizedAnswer,
+      false,
+      `不正解です。正答例は「${question.correctAnswer}」です。`,
+      ["too_short"],
+    );
+  }
+
+  return buildIncorrectResult(
+    question,
+    normalizedAnswer,
+    true,
+    "和訳は表現の幅があるため、意味が合っているかを追加で判定します。",
+    ["needs_semantic_check"],
   );
 }

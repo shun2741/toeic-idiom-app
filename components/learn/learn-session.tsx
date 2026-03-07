@@ -93,15 +93,19 @@ export function LearnSession({
             <Badge className="bg-primary/10 text-primary">
               {mode === "learn" ? "通常学習" : "復習セッション"}
             </Badge>
+            <Badge className="bg-slate-100 text-slate-700">
+              {question.questionType === "ja_to_idiom" ? "英熟語入力" : "和訳入力"}
+            </Badge>
             <Badge>{question.levelBand} レベル帯</Badge>
             {typeof dueCount === "number" ? (
               <Badge className="bg-slate-100 text-slate-700">復習対象 {dueCount} 問</Badge>
             ) : null}
           </div>
           <div>
-            <CardTitle className="text-2xl sm:text-3xl">{question.promptJa}</CardTitle>
+            <p className="mb-2 text-sm font-semibold text-slate-500">{question.promptLabel}</p>
+            <CardTitle className="text-2xl sm:text-3xl">{question.prompt}</CardTitle>
             <CardDescription className="mt-2 text-base">
-              対応する英熟語を、半角スペースを含めて入力してください。
+              {question.promptDescription}
             </CardDescription>
           </div>
         </CardHeader>
@@ -112,7 +116,11 @@ export function LearnSession({
               className="h-14 text-lg"
               disabled={Boolean(result)}
               maxLength={120}
-              placeholder="例: put off"
+              placeholder={
+                question.questionType === "ja_to_idiom"
+                  ? "例: put off"
+                  : "例: 延期する"
+              }
               value={answer}
               onChange={(event) => setAnswer(event.target.value)}
             />
@@ -176,6 +184,8 @@ export function LearnSession({
               <p className="text-2xl font-bold">{result.result.correctAnswer}</p>
               <p className="leading-7 text-slate-600">{result.result.feedbackJa}</p>
               <div className="rounded-2xl border border-border bg-white p-4 text-sm leading-7 text-slate-600">
+                <p>英熟語: {question.sourceExpression}</p>
+                <p>意味: {question.sourceMeaningJa}</p>
                 <p>解説: {question.explanationJa}</p>
                 <p>次回復習予定: {formatDateTime(result.nextReviewAt)}</p>
                 <p>復習間隔: {result.intervalDays} 日</p>

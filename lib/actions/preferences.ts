@@ -9,6 +9,7 @@ import {
   normalizeLevelBands,
   serializeLevelBands,
 } from "@/lib/preferences/level-filter";
+import { normalizeQuestionType, QUESTION_TYPE_COOKIE } from "@/lib/preferences/question-type";
 
 export async function saveLevelBandsAction(formData: FormData) {
   const cookieStore = await cookies();
@@ -33,6 +34,23 @@ export async function resetLevelBandsAction() {
   const cookieStore = await cookies();
 
   cookieStore.set(LEVEL_FILTER_COOKIE, serializeLevelBands(LEVEL_BANDS), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 180,
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/learn");
+  revalidatePath("/");
+}
+
+export async function saveQuestionTypeAction(formData: FormData) {
+  const cookieStore = await cookies();
+  const questionType = normalizeQuestionType(String(formData.get("questionType") ?? ""));
+
+  cookieStore.set(QUESTION_TYPE_COOKIE, questionType, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

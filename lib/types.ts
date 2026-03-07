@@ -1,11 +1,13 @@
 export type Judgment = "correct" | "almost_correct" | "incorrect";
 export type LevelBand = "700" | "730" | "780" | "860";
+export type QuestionType = "ja_to_idiom" | "idiom_to_ja";
 
 export type IdiomSeed = {
   id: string;
   expression: string;
   meaningJa: string;
   variants: string[];
+  translationVariantsJa?: string[];
   explanationJa: string;
   hintJa: string;
   levelBand: LevelBand;
@@ -14,16 +16,21 @@ export type IdiomSeed = {
 export type QuestionSeed = {
   id: string;
   idiomId: string;
-  promptJa: string;
-  type: "ja_to_idiom";
+  prompt: string;
+  type: QuestionType;
 };
 
 export type StudyQuestion = {
   questionId: string;
   idiomId: string;
-  promptJa: string;
+  prompt: string;
+  promptLabel: string;
+  promptDescription: string;
   correctAnswer: string;
   acceptedAnswers: string[];
+  questionType: QuestionType;
+  sourceExpression: string;
+  sourceMeaningJa: string;
   explanationJa: string;
   hintJa: string;
   levelBand: LevelBand;
@@ -55,7 +62,7 @@ export type DailyHistory = {
 
 export type RecentMistake = {
   questionId: string;
-  promptJa: string;
+  prompt: string;
   correctAnswer: string;
   answeredAt: string;
   judgment: Judgment;

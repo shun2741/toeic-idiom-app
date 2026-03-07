@@ -3,11 +3,13 @@ import { cookies } from "next/headers";
 import { ArrowRight, Clock3, Sparkles } from "lucide-react";
 
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
+import { QuestionTypeForm } from "@/components/preferences/question-type-form";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
+import { getQuestionTypeFromCookies, labelQuestionType } from "@/lib/preferences/question-type";
 import { Progress } from "@/components/ui/progress";
 import { getDashboardStats, getRecentAnswers } from "@/lib/data/repository";
 import { requireUser } from "@/lib/supabase/auth";
@@ -16,6 +18,7 @@ import { formatDateTime } from "@/lib/utils";
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const selectedBands = getLevelBandsFromCookies(cookieStore);
+  const selectedQuestionType = getQuestionTypeFromCookies(cookieStore);
   const { user, supabase } = await requireUser();
   const [stats, recentAnswers] = await Promise.all([
     getDashboardStats(supabase, user.id),
@@ -94,10 +97,11 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>現在の出題設定</CardTitle>
             <CardDescription>
-              通常学習では {selectedBands.map(labelLevelBand).join(" / ")} を優先します。
+              通常学習では {labelQuestionType(selectedQuestionType)} で、{selectedBands.map(labelLevelBand).join(" / ")} を優先します。
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="space-y-4 pt-0">
+            <QuestionTypeForm selectedType={selectedQuestionType} />
             <LevelFilterForm selectedBands={selectedBands} />
           </CardContent>
         </Card>
@@ -120,9 +124,12 @@ export default async function DashboardPage() {
                 <div key={answer.id} className="rounded-2xl border border-border bg-slate-50 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-500">{answer.question?.promptJa}</p>
+                      <p className="text-sm font-semibold text-slate-500">{answer.question?.prompt}</p>
                       <p className="mt-1 text-lg font-bold text-slate-950">
                         {answer.question?.correctAnswer ?? "-"}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        {answer.question?.questionType === "idiom_to_ja" ? "和訳入力" : "英熟語入力"}
                       </p>
                     </div>
                     <Badge
