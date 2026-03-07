@@ -87,7 +87,7 @@ export function LearnSession({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-      <Card className="animate-fade-up border-white/80 bg-white/92">
+      <Card className="animate-fade-up border-border/80 bg-white">
         <CardHeader className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
             <Badge className="bg-primary/10 text-primary">
@@ -150,44 +150,44 @@ export function LearnSession({
         </CardContent>
       </Card>
 
-      <Card className="animate-fade-up border-white/80 bg-slate-950 text-white" style={{ animationDelay: "120ms" }}>
+      <Card className="animate-fade-up border-border/80 bg-white" style={{ animationDelay: "120ms" }}>
         <CardHeader>
-          <CardTitle className="text-xl text-white">ヒントと結果</CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardTitle className="text-xl text-slate-950">ヒントと結果</CardTitle>
+          <CardDescription className="text-slate-600">
             入力前はヒント、採点後はフィードバックと次回復習予定を表示します。
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-3xl bg-white/8 p-5">
-            <p className="flex items-center gap-2 text-sm font-semibold text-sky-200">
+          <div className="rounded-2xl border border-border bg-slate-50 p-5">
+            <p className="flex items-center gap-2 text-sm font-semibold text-primary">
               <Lightbulb className="h-4 w-4" />
               ヒント
             </p>
-            <p className="mt-2 leading-7 text-slate-200">{question.hintJa}</p>
+            <p className="mt-2 leading-7 text-slate-700">{question.hintJa}</p>
           </div>
 
           {result ? (
-            <div className="space-y-4 rounded-3xl bg-white p-5 text-slate-900">
+            <div className="space-y-4 rounded-2xl border border-border bg-slate-50 p-5 text-slate-900">
               <Badge className={judgmentClassName(result.result.judgment)}>
                 {judgmentLabel(result.result.judgment)}
               </Badge>
               <p className="text-sm font-semibold text-slate-500">正答</p>
               <p className="text-2xl font-bold">{result.result.correctAnswer}</p>
               <p className="leading-7 text-slate-600">{result.result.feedbackJa}</p>
-              <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+              <div className="rounded-2xl border border-border bg-white p-4 text-sm leading-7 text-slate-600">
                 <p>解説: {question.explanationJa}</p>
                 <p>次回復習予定: {formatDateTime(result.nextReviewAt)}</p>
                 <p>復習間隔: {result.intervalDays} 日</p>
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-slate-300">
+            <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm leading-7 text-slate-600">
               採点後に、正誤・解説・次回復習予定がここに表示されます。
             </div>
           )}
         </CardContent>
         <CardFooter>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-slate-500">
             AI 採点は曖昧なケースだけに限定し、通常はルールベース判定で返します。
           </p>
         </CardFooter>

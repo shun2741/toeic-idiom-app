@@ -41,13 +41,13 @@ export function StatsGrid({ stats }: { stats: DashboardStats }) {
       {statConfig.map((item, index) => (
         <Card
           key={item.key}
-          className="animate-fade-up border-white/80 bg-white/85"
+          className="animate-fade-up border-border/80 bg-white"
           style={{ animationDelay: `${index * 90}ms` }}
         >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm text-slate-500">{item.label}</CardTitle>
-              <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.color}`}>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.color}`}>
                 <item.icon className="h-5 w-5" />
               </div>
             </div>

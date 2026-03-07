@@ -12,7 +12,7 @@ export default async function LearnPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="animate-fade-up border-white/80 bg-white/92">
+      <Card className="animate-fade-up border-border/80 bg-white">
         <CardHeader>
           <CardTitle className="text-2xl">通常学習</CardTitle>
           <CardDescription>

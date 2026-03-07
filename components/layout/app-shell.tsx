@@ -19,22 +19,22 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <header className="animate-fade-up rounded-[32px] border border-white/70 bg-white/80 px-5 py-4 shadow-soft backdrop-blur sm:px-6">
+        <header className="animate-fade-up rounded-3xl border border-border/80 bg-white px-5 py-4 sm:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
               <Link
                 href="/dashboard"
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground"
+                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-base font-bold text-white"
               >
                 TI
               </Link>
               <div>
-                <p className="text-sm font-semibold tracking-[0.18em] text-primary/80 uppercase">
+                <p className="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">
                   TOEIC Idiom Coach
                 </p>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-600">
                   自由入力で英熟語を定着させる学習ダッシュボード
                 </p>
               </div>
@@ -50,7 +50,7 @@ export function AppShell({
                 ))}
               </nav>
 
-              <div className="flex items-center gap-3 rounded-full bg-slate-50 px-4 py-2">
+              <div className="flex items-center gap-3 rounded-full border border-border bg-slate-50 px-4 py-2">
                 <div className="hidden text-right sm:block">
                   <p className="text-xs font-semibold text-slate-500">ログイン中</p>
                   <p className="max-w-48 truncate text-sm text-slate-800">{userEmail ?? "Google User"}</p>

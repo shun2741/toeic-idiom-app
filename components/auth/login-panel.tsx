@@ -28,7 +28,7 @@ export function LoginPanel() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-      <section className="space-y-6 rounded-[32px] border border-white/70 bg-white/70 p-8 shadow-soft backdrop-blur sm:p-10">
+      <section className="space-y-6 rounded-3xl border border-border bg-white p-8 sm:p-10">
         <Badge className="bg-primary/10 text-primary">TOEIC 700-860 向け</Badge>
         <div className="space-y-4">
           <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
@@ -44,7 +44,7 @@ export function LoginPanel() {
           {featureItems.map((item, index) => (
             <Card
               key={item.title}
-              className="animate-fade-up border-slate-200/80 bg-white"
+              className="animate-fade-up border-border bg-slate-50"
               style={{ animationDelay: `${index * 120}ms` }}
             >
               <CardHeader className="space-y-3 pb-3">
@@ -61,7 +61,7 @@ export function LoginPanel() {
         </div>
       </section>
 
-      <Card className="overflow-hidden border-primary/10 bg-white/95">
+      <Card className="overflow-hidden border-border bg-white">
         <CardHeader className="space-y-3">
           <Badge className="w-fit bg-accent text-accent-foreground">はじめる</Badge>
           <CardTitle className="text-2xl">ログインして学習を開始</CardTitle>
@@ -71,7 +71,7 @@ export function LoginPanel() {
         </CardHeader>
         <CardContent className="space-y-6">
           <GoogleSignInButton />
-          <div className="rounded-3xl bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+          <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm leading-7 text-slate-600">
             <p className="flex items-center gap-2 font-semibold text-slate-800">
               <ArrowRight className="h-4 w-4 text-primary" />
               初回セットアップ

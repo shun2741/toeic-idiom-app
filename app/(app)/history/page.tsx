@@ -14,7 +14,7 @@ export default async function HistoryPage() {
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-      <Card className="animate-fade-up border-white/80 bg-white/92">
+      <Card className="animate-fade-up border-border/80 bg-white">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
             <CalendarDays className="h-5 w-5 text-primary" />
@@ -24,12 +24,12 @@ export default async function HistoryPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {dailyHistory.length === 0 ? (
-            <div className="rounded-3xl bg-slate-50 p-5 text-sm text-slate-500">
+            <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm text-slate-500">
               まだ学習履歴がありません。
             </div>
           ) : (
             dailyHistory.map((item) => (
-              <div key={item.date} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
+              <div key={item.date} className="rounded-2xl border border-border bg-slate-50 p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold text-slate-950">{formatDate(item.date)}</p>
@@ -49,7 +49,7 @@ export default async function HistoryPage() {
         </CardContent>
       </Card>
 
-      <Card className="animate-fade-up border-white/80 bg-white/92" style={{ animationDelay: "120ms" }}>
+      <Card className="animate-fade-up border-border/80 bg-white" style={{ animationDelay: "120ms" }}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
             <AlertCircle className="h-5 w-5 text-warning" />
@@ -59,12 +59,12 @@ export default async function HistoryPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {recentMistakes.length === 0 ? (
-            <div className="rounded-3xl bg-slate-50 p-5 text-sm text-slate-500">
+            <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm text-slate-500">
               最近のミスはありません。
             </div>
           ) : (
             recentMistakes.map((mistake) => (
-              <div key={`${mistake.questionId}-${mistake.answeredAt}`} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
+              <div key={`${mistake.questionId}-${mistake.answeredAt}`} className="rounded-2xl border border-border bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-semibold text-slate-950">{mistake.promptJa}</p>
                   <Badge

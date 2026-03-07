@@ -12,7 +12,7 @@ export default async function ReviewPage() {
 
   if (!question) {
     return (
-      <Card className="animate-fade-up border-white/80 bg-white/92">
+      <Card className="animate-fade-up border-border/80 bg-white">
         <CardHeader>
           <CardTitle className="text-2xl">復習</CardTitle>
           <CardDescription>現在、期日が来ている復習問題はありません。</CardDescription>
@@ -31,7 +31,7 @@ export default async function ReviewPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="animate-fade-up border-white/80 bg-white/92">
+      <Card className="animate-fade-up border-border/80 bg-white">
         <CardHeader>
           <CardTitle className="text-2xl">復習キュー</CardTitle>
           <CardDescription>
