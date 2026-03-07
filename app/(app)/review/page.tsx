@@ -35,7 +35,7 @@ export default async function ReviewPage() {
         <CardHeader>
           <CardTitle className="text-2xl">復習キュー</CardTitle>
           <CardDescription>
-            期日が来ている問題だけを出題します。現在 {dueCount} 問が対象です。
+            期日が来ている問題だけを出題します。現在 {dueCount} 問が対象です。復習は学習レベル設定に関係なく優先して出題します。
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">

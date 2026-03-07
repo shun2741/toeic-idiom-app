@@ -1,4 +1,5 @@
 export type Judgment = "correct" | "almost_correct" | "incorrect";
+export type LevelBand = "700" | "730" | "780" | "860";
 
 export type IdiomSeed = {
   id: string;
@@ -7,7 +8,7 @@ export type IdiomSeed = {
   variants: string[];
   explanationJa: string;
   hintJa: string;
-  levelBand: "700" | "730" | "780" | "860";
+  levelBand: LevelBand;
 };
 
 export type QuestionSeed = {
@@ -25,7 +26,7 @@ export type StudyQuestion = {
   acceptedAnswers: string[];
   explanationJa: string;
   hintJa: string;
-  levelBand: IdiomSeed["levelBand"];
+  levelBand: LevelBand;
 };
 
 export type ScoreResult = {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getQuestionById } from "@/lib/data/idioms";
 import { persistAnswer } from "@/lib/data/repository";
@@ -7,11 +8,11 @@ import { normalizeAnswer } from "@/lib/scoring/normalize";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasServerSupabaseEnv } from "@/lib/supabase/env";
 
-type SubmitPayload = {
-  questionId?: string;
-  answer?: string;
-  mode?: "learn" | "review";
-};
+const submitPayloadSchema = z.object({
+  questionId: z.string().min(1).max(100),
+  answer: z.string().trim().min(1).max(120),
+  mode: z.enum(["learn", "review"]).optional(),
+});
 
 export async function POST(request: Request) {
   if (!hasServerSupabaseEnv()) {
@@ -30,10 +31,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "ログインが必要です。" }, { status: 401 });
   }
 
-  const payload = (await request.json()) as SubmitPayload;
-  const question = payload.questionId ? getQuestionById(payload.questionId) : null;
+  const parsed = submitPayloadSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "入力形式が不正です。120文字以内で回答してください。" },
+      { status: 400 },
+    );
+  }
 
-  if (!question || !payload.answer) {
+  const payload = parsed.data;
+  const question = getQuestionById(payload.questionId);
+
+  if (!question) {
     return NextResponse.json({ error: "入力値が不足しています。" }, { status: 400 });
   }
 

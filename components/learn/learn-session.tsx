@@ -111,6 +111,7 @@ export function LearnSession({
               autoComplete="off"
               className="h-14 text-lg"
               disabled={Boolean(result)}
+              maxLength={120}
               placeholder="例: put off"
               value={answer}
               onChange={(event) => setAnswer(event.target.value)}

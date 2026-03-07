@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { QUESTION_BANK, getQuestionById } from "@/lib/data/idioms";
+import type { LevelBand } from "@/lib/types";
 import { computeReviewIntervalDays } from "@/lib/review/schedule";
 import type {
   DailyHistory,
@@ -29,7 +30,16 @@ type ReviewQueueRow = {
 export async function selectLearnQuestion(
   supabase: SupabaseClient,
   userId: string,
+  levelBands: LevelBand[],
 ) {
+  const filteredQuestionBank = QUESTION_BANK.filter((question) =>
+    levelBands.includes(question.levelBand),
+  );
+
+  if (filteredQuestionBank.length === 0) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from("user_answers")
     .select("question_id, answered_at")
@@ -56,12 +66,12 @@ export async function selectLearnQuestion(
     }
   }
 
-  const unanswered = QUESTION_BANK.find((question) => !counts.has(question.questionId));
+  const unanswered = filteredQuestionBank.find((question) => !counts.has(question.questionId));
   if (unanswered) {
     return unanswered;
   }
 
-  return [...QUESTION_BANK].sort((a, b) => {
+  return [...filteredQuestionBank].sort((a, b) => {
     const left = counts.get(a.questionId)!;
     const right = counts.get(b.questionId)!;
 

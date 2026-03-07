@@ -1,16 +1,21 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { ArrowRight, Clock3, Sparkles } from "lucide-react";
 
+import { LevelFilterForm } from "@/components/preferences/level-filter-form";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
 import { Progress } from "@/components/ui/progress";
 import { getDashboardStats, getRecentAnswers } from "@/lib/data/repository";
 import { requireUser } from "@/lib/supabase/auth";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function DashboardPage() {
+  const cookieStore = await cookies();
+  const selectedBands = getLevelBandsFromCookies(cookieStore);
   const { user, supabase } = await requireUser();
   const [stats, recentAnswers] = await Promise.all([
     getDashboardStats(supabase, user.id),
@@ -87,6 +92,18 @@ export default async function DashboardPage() {
       <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <Card className="animate-fade-up border-border/80 bg-white">
           <CardHeader>
+            <CardTitle>現在の出題設定</CardTitle>
+            <CardDescription>
+              通常学習では {selectedBands.map(labelLevelBand).join(" / ")} を優先します。
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <LevelFilterForm selectedBands={selectedBands} />
+          </CardContent>
+        </Card>
+
+        <Card className="animate-fade-up border-border/80 bg-white">
+          <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock3 className="h-5 w-5 text-primary" />
               直近の回答
@@ -126,7 +143,9 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+      </section>
 
+      <section className="grid gap-6 xl:grid-cols-[1fr]">
         <Card className="animate-fade-up border-border/80 bg-white" style={{ animationDelay: "120ms" }}>
           <CardHeader>
             <CardTitle>使い方</CardTitle>
