@@ -7,6 +7,7 @@ import { LearnSession } from "@/components/learn/learn-session";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
+import { SettingsSummary } from "@/components/preferences/settings-summary";
 import { QuestionTypeForm } from "@/components/preferences/question-type-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,15 +72,17 @@ export default async function TrialPage({
 
           {question ? (
             <>
-              <Card className="animate-fade-up border-border/80 bg-white">
-                <CardHeader>
-                  <CardTitle className="text-2xl">体験学習</CardTitle>
-                  <CardDescription>
-                    {labelQuestionType(selectedQuestionType)} / {labelAnswerMode(selectedAnswerMode)} で出題しています。
-                    現在の母集団は {poolCount} 問、全体は {QUESTION_BANK.length} 問です。
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+              <SettingsSummary
+                description={`現在の母集団は ${poolCount} 問、全体は ${QUESTION_BANK.length} 問です。`}
+                href="#trial-settings"
+                items={[
+                  { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
+                  { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
+                  { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
+                  { label: "モード", value: "ログインなし体験" },
+                ]}
+                title="現在の体験設定"
+              />
 
               <LearnSession
                 allowChecking={false}
@@ -103,6 +106,7 @@ export default async function TrialPage({
           )}
 
           <details
+            id="trial-settings"
             className="group animate-fade-up rounded-3xl border border-border/80 bg-white"
             style={{ animationDelay: "120ms" }}
             open={!question}
@@ -111,7 +115,7 @@ export default async function TrialPage({
               <div>
                 <p className="text-sm font-semibold text-slate-950">体験モードの設定</p>
                 <p className="text-sm text-slate-600">
-                  レベルは {selectedBands.map(labelLevelBand).join(" / ")}。必要なときだけ開けます。
+                  英訳・和訳、選択式・自由入力、レベルをここで変更できます。
                 </p>
               </div>
               <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />

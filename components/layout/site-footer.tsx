@@ -2,8 +2,6 @@ import Link from "next/link";
 
 const footerLinks = [
   { href: "/privacy", label: "プライバシーポリシー" },
-  { href: "/contact", label: "お問い合わせ" },
-  { href: "/feedback", label: "フィードバック" },
 ];
 
 export function SiteFooter() {

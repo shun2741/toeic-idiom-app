@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { BetaBanner } from "@/components/layout/beta-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,13 +43,7 @@ export default function PrivacyPage() {
               ))}
               <section className="space-y-2">
                 <h2 className="text-base font-semibold text-slate-950">お問い合わせ</h2>
-                <p>
-                  ベータ版に関する問い合わせは
-                  <Link className="mx-1 underline underline-offset-4" href="/contact">
-                    お問い合わせページ
-                  </Link>
-                  を確認してください。
-                </p>
+                <p>ベータ版に関する連絡や削除希望は、運営者へ直接共有してください。</p>
               </section>
               <p className="text-slate-500">最終更新日: 2026-03-08</p>
             </CardContent>

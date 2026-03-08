@@ -132,7 +132,7 @@ export function LearnSession({
     <div className="space-y-4">
       <Card className="animate-fade-up border-border/80 bg-white">
         <CardHeader className="space-y-4">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-sm font-medium text-slate-500">
                 {[
@@ -150,7 +150,7 @@ export function LearnSession({
             </div>
             {allowChecking ? (
               <Button
-                className="gap-2"
+                className="w-full gap-2 sm:w-auto"
                 disabled={isTogglingCheck}
                 onClick={handleToggleCheck}
                 type="button"
@@ -167,15 +167,15 @@ export function LearnSession({
             <form className="space-y-4" onSubmit={handleSubmit}>
               <Input
                 autoComplete="off"
-                className="h-14 text-lg"
+                className="h-14 text-base sm:text-lg"
                 disabled={Boolean(result)}
                 maxLength={120}
                 placeholder={question.questionType === "ja_to_idiom" ? "例: put off" : "例: 延期する"}
                 value={answer}
                 onChange={(event) => setAnswer(event.target.value)}
               />
-              <div className="flex flex-wrap gap-3">
-                <Button disabled={!answer.trim() || isSubmitting || Boolean(result)} size="lg" type="submit">
+              <div className="grid gap-3 sm:flex sm:flex-wrap">
+                <Button className="w-full sm:w-auto" disabled={!answer.trim() || isSubmitting || Boolean(result)} size="lg" type="submit">
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -186,6 +186,7 @@ export function LearnSession({
                   )}
                 </Button>
                 <Button
+                  className="w-full sm:w-auto"
                   disabled={isSubmitting || Boolean(result)}
                   onClick={() => {
                     void submitAnswer(DONT_KNOW_SENTINEL);
@@ -197,6 +198,7 @@ export function LearnSession({
                   わからない
                 </Button>
                 <Button
+                  className="w-full sm:w-auto"
                   disabled={isSubmitting || isMoving}
                   onClick={handleNextQuestion}
                   size="lg"
@@ -235,6 +237,7 @@ export function LearnSession({
                 ))}
               </div>
               <Button
+                className="w-full sm:w-auto"
                 disabled={Boolean(result) || isSubmitting}
                 onClick={() => {
                   void submitAnswer(DONT_KNOW_SENTINEL);
@@ -246,6 +249,7 @@ export function LearnSession({
                 わからない
               </Button>
               <Button
+                className="w-full sm:w-auto"
                 disabled={isSubmitting || isMoving}
                 onClick={handleNextQuestion}
                 size="lg"

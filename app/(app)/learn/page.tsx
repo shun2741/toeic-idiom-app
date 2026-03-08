@@ -7,6 +7,7 @@ import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
 import { QuestionSourceForm } from "@/components/preferences/question-source-form";
 import { QuestionTypeForm } from "@/components/preferences/question-type-form";
+import { SettingsSummary } from "@/components/preferences/settings-summary";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDashboardStats, selectLearnQuestion } from "@/lib/data/repository";
@@ -78,21 +79,22 @@ export default async function LearnPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="animate-fade-up border-border/80 bg-white">
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-2">
-            <CardTitle className="text-2xl">学習セッション</CardTitle>
-            <CardDescription>
-              {labelQuestionType(selectedQuestionType)} / {labelAnswerMode(selectedAnswerMode)} /{" "}
-              {labelQuestionSourceMode(selectedQuestionSourceMode)} で出題しています。現在の母集団は{" "}
-              {poolCount} 問、全体は {stats.totalQuestions} 問です。
-            </CardDescription>
-          </div>
-          <Link href="/review">
-            <Button variant="outline">復習を見る</Button>
-          </Link>
-        </CardHeader>
-      </Card>
+      <div className="grid gap-4 xl:grid-cols-[1fr_auto]">
+        <SettingsSummary
+          description={`現在の母集団は ${poolCount} 問、全体は ${stats.totalQuestions} 問です。`}
+          href="#study-settings"
+          items={[
+            { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
+            { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
+            { label: "出題対象", value: labelQuestionSourceMode(selectedQuestionSourceMode) },
+            { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
+          ]}
+          title="現在の学習設定"
+        />
+        <Link className="self-start" href="/review">
+          <Button className="w-full xl:w-auto" variant="outline">復習を見る</Button>
+        </Link>
+      </div>
 
       <LearnSession
         answerMode={selectedAnswerMode}
@@ -103,6 +105,7 @@ export default async function LearnPage() {
       />
 
       <details
+        id="study-settings"
         className="group animate-fade-up rounded-3xl border border-border/80 bg-white"
         style={{ animationDelay: "120ms" }}
       >
@@ -110,7 +113,7 @@ export default async function LearnPage() {
           <div>
             <p className="text-sm font-semibold text-slate-950">学習設定</p>
             <p className="text-sm text-slate-600">
-              レベルは {selectedBands.map(labelLevelBand).join(" / ")}。必要なときだけ設定を開けます。
+              英訳・和訳、選択式・自由入力、出題対象、レベルをここで変更できます。
             </p>
           </div>
           <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
