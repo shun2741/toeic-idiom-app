@@ -1,3 +1,4 @@
+import { IDIOM_SUPPORT } from "@/lib/data/idiom-support";
 import type { IdiomSeed, StudyQuestion } from "@/lib/types";
 
 export const IDIOM_BANK: IdiomSeed[] = [
@@ -300,6 +301,21 @@ export const IDIOM_BANK: IdiomSeed[] = [
   },
 ];
 
+function getSupport(idiom: IdiomSeed) {
+  return {
+    exampleEn:
+      IDIOM_SUPPORT[idiom.id]?.exampleEn ??
+      `Please use "${idiom.expression}" in a short business sentence.`,
+    exampleJa:
+      IDIOM_SUPPORT[idiom.id]?.exampleJa ??
+      `${idiom.expression} は「${idiom.meaningJa}」の意味で使います。`,
+    collocationHintJa:
+      IDIOM_SUPPORT[idiom.id]?.collocationHintJa ??
+      `${idiom.expression} は業務や連絡の文脈で見かけやすい熟語です。`,
+    commonMistakeJa: IDIOM_SUPPORT[idiom.id]?.commonMistakeJa ?? idiom.hintJa,
+  };
+}
+
 export const QUESTION_BANK: StudyQuestion[] = [
   ...IDIOM_BANK.map(
     (idiom): StudyQuestion => ({
@@ -315,6 +331,7 @@ export const QUESTION_BANK: StudyQuestion[] = [
       sourceMeaningJa: idiom.meaningJa,
       explanationJa: idiom.explanationJa,
       hintJa: idiom.hintJa,
+      ...getSupport(idiom),
       levelBand: idiom.levelBand,
     }),
   ),
@@ -333,6 +350,7 @@ export const QUESTION_BANK: StudyQuestion[] = [
       sourceMeaningJa: idiom.meaningJa,
       explanationJa: idiom.explanationJa,
       hintJa: `${idiom.hintJa} 和訳は言い換えでも意味が合えば評価対象です。`,
+      ...getSupport(idiom),
       levelBand: idiom.levelBand,
     }),
   ),

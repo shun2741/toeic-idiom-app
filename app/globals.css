@@ -55,3 +55,130 @@ a {
     linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
   background-size: 48px 48px;
 }
+
+@keyframes result-pop {
+  0% {
+    transform: scale(0.985);
+    opacity: 0.65;
+  }
+
+  65% {
+    transform: scale(1.01);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes result-glow-correct {
+  0% {
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+  }
+
+  40% {
+    box-shadow: 0 18px 40px rgba(16, 185, 129, 0.14);
+  }
+
+  100% {
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes result-glow-almost {
+  0% {
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0);
+  }
+
+  40% {
+    box-shadow: 0 18px 40px rgba(245, 158, 11, 0.14);
+  }
+
+  100% {
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes result-glow-incorrect {
+  0% {
+    box-shadow: 0 0 0 rgba(244, 63, 94, 0);
+  }
+
+  40% {
+    box-shadow: 0 18px 40px rgba(244, 63, 94, 0.12);
+  }
+
+  100% {
+    box-shadow: 0 0 0 rgba(244, 63, 94, 0);
+  }
+}
+
+@keyframes spark-burst {
+  0% {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(var(--spark-x), var(--spark-y)) scale(1);
+    opacity: 0;
+  }
+}
+
+.result-pop {
+  animation: result-pop 220ms ease-out;
+}
+
+.result-glow-correct {
+  animation:
+    result-pop 220ms ease-out,
+    result-glow-correct 900ms ease-out;
+}
+
+.result-glow-almost {
+  animation:
+    result-pop 220ms ease-out,
+    result-glow-almost 900ms ease-out;
+}
+
+.result-glow-incorrect {
+  animation:
+    result-pop 220ms ease-out,
+    result-glow-incorrect 900ms ease-out;
+}
+
+.result-spark {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.75);
+  animation: spark-burst 700ms ease-out forwards;
+}
+
+.result-spark-1 {
+  --spark-x: -1.2rem;
+  --spark-y: -1rem;
+}
+
+.result-spark-2 {
+  --spark-x: -2rem;
+  --spark-y: 0.5rem;
+  animation-delay: 40ms;
+  background: rgba(59, 130, 246, 0.7);
+}
+
+.result-spark-3 {
+  --spark-x: -0.25rem;
+  --spark-y: 1.35rem;
+  animation-delay: 80ms;
+  background: rgba(251, 191, 36, 0.78);
+}

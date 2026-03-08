@@ -15,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 
+import { StudyNote } from "@/components/learn/study-note";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +66,42 @@ function ResultIcon({ judgment }: { judgment: Judgment }) {
   return <XCircle className="h-6 w-6 text-rose-600" />;
 }
 
+function resultEffectClassName(judgment: Judgment) {
+  if (judgment === "correct") return "result-glow-correct";
+  if (judgment === "almost_correct") return "result-glow-almost";
+  return "result-glow-incorrect";
+}
+
+function achievementCopy({
+  todayCount,
+  currentStreak,
+  judgment,
+  guestMode,
+}: {
+  todayCount: number;
+  currentStreak: number;
+  judgment: Judgment;
+  guestMode: boolean;
+}) {
+  const nextCount = todayCount + 1;
+  const streakLabel =
+    judgment === "correct" || judgment === "almost_correct"
+      ? currentStreak + 1
+      : 0;
+
+  if (guestMode) {
+    if (nextCount === 1) return "まずは1問クリア。使い心地をそのまま試してみてください。";
+    if (nextCount === 5) return "5問到達。短時間でも続けると感覚がつかめてきます。";
+    return `体験モードで ${nextCount} 問目まで進みました。`;
+  }
+
+  if (nextCount === 1) return "今日の1問目を完了しました。ここから流れが作れます。";
+  if (nextCount === 5) return "今日5問目まで到達しました。短い学習でも十分積み上がっています。";
+  if (nextCount === 10) return "今日の目標10問を達成しました。ここで切り上げても十分です。";
+  if (streakLabel >= 5) return `連続 ${streakLabel} 問で正答側を維持しています。`;
+  return `今日 ${nextCount} 問目まで完了しました。`;
+}
+
 export function LearnSession({
   answerMode,
   choiceOptions,
@@ -74,6 +111,8 @@ export function LearnSession({
   dueCount,
   guestMode = false,
   allowChecking = true,
+  todayCount = 0,
+  currentStreak = 0,
 }: {
   answerMode: AnswerMode;
   choiceOptions: string[];
@@ -83,6 +122,8 @@ export function LearnSession({
   dueCount?: number;
   guestMode?: boolean;
   allowChecking?: boolean;
+  todayCount?: number;
+  currentStreak?: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -330,14 +371,21 @@ export function LearnSession({
         ) : (
           <div className="border-t border-border px-6 pb-6">
             <div
-              className={`space-y-4 rounded-3xl border p-5 sm:p-6 ${resultPanelClassName(result.result.judgment)}`}
+              className={`relative space-y-4 overflow-hidden rounded-3xl border p-5 sm:p-6 ${resultPanelClassName(result.result.judgment)} ${resultEffectClassName(result.result.judgment)}`}
             >
+              {result.result.judgment === "correct" ? (
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                  <span className="result-spark result-spark-1" />
+                  <span className="result-spark result-spark-2" />
+                  <span className="result-spark result-spark-3" />
+                </div>
+              ) : null}
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <ResultIcon judgment={result.result.judgment} />
                     <div>
-                      <p className="text-sm font-semibold tracking-wide text-current/70">
+                      <p className="text-sm font-semibold tracking-wide text-current opacity-70">
                         採点結果
                       </p>
                       <p className="text-2xl font-bold">{judgmentLabel(result.result.judgment)}</p>
@@ -347,10 +395,18 @@ export function LearnSession({
                     {judgmentLabel(result.result.judgment)}
                   </Badge>
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-current/70">正答</p>
+                    <p className="text-sm font-semibold text-current opacity-70">正答</p>
                     <p className="text-2xl font-bold">{result.result.correctAnswer}</p>
                   </div>
-                  <p className="leading-7 text-current/85">{result.result.feedbackJa}</p>
+                  <p className="text-sm font-semibold text-current opacity-70">
+                    {achievementCopy({
+                      todayCount,
+                      currentStreak,
+                      judgment: result.result.judgment,
+                      guestMode,
+                    })}
+                  </p>
+                  <p className="leading-7 text-current opacity-90">{result.result.feedbackJa}</p>
                 </div>
                 <Button
                   className="w-full sm:w-auto"
@@ -376,17 +432,31 @@ export function LearnSession({
               <details className="group rounded-2xl border border-white/70 bg-white/80">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4">
                   <div>
-                    <p className="text-sm font-semibold text-slate-950">解説を見る</p>
+                    <p className="text-sm font-semibold text-slate-950">解説と定着ポイントを見る</p>
                     <p className="mt-1 text-sm text-slate-600">
-                      意味、解説、復習予定を必要なときだけ確認できます。
+                      例文、よく一緒に出る語、間違えやすい点、復習予定を必要なときだけ確認できます。
                     </p>
                   </div>
                   <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
                 </summary>
-                <div className="space-y-2 border-t border-border px-4 py-4 text-sm leading-7 text-slate-700">
-                  <p>英熟語: {question.sourceExpression}</p>
-                  <p>意味: {question.sourceMeaningJa}</p>
-                  <p>解説: {question.explanationJa}</p>
+                <div className="space-y-4 border-t border-border px-4 py-4 text-sm leading-7 text-slate-700">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="rounded-2xl border border-border bg-slate-50 p-4">
+                      <p className="text-sm font-semibold text-slate-950">例文</p>
+                      <p className="mt-2 text-slate-900">{question.exampleEn}</p>
+                      <p className="mt-2 text-slate-600">{question.exampleJa}</p>
+                    </div>
+                    <div className="rounded-2xl border border-border bg-slate-50 p-4">
+                      <p className="text-sm font-semibold text-slate-950">定着ポイント</p>
+                      <p className="mt-2">よく一緒に出る語: {question.collocationHintJa}</p>
+                      <p className="mt-2">間違えやすい点: {question.commonMistakeJa}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-slate-50 p-4">
+                    <p>英熟語: {question.sourceExpression}</p>
+                    <p>意味: {question.sourceMeaningJa}</p>
+                    <p>解説: {question.explanationJa}</p>
+                  </div>
                   {guestMode ? (
                     <p>ログインすると、学習履歴と復習予定を保存できます。</p>
                   ) : (
@@ -395,6 +465,7 @@ export function LearnSession({
                       <p>復習間隔: {result.intervalDays ?? "-"} 日</p>
                     </>
                   )}
+                  <StudyNote guestMode={guestMode} questionId={question.questionId} />
                 </div>
               </details>
             </div>

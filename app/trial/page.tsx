@@ -88,10 +88,12 @@ export default async function TrialPage({
                 allowChecking={false}
                 answerMode={selectedAnswerMode}
                 choiceOptions={choiceOptions}
+                currentStreak={0}
                 guestMode
                 isChecked={isChecked}
                 mode="learn"
                 question={question}
+                todayCount={0}
               />
             </>
           ) : (

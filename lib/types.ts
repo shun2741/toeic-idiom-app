@@ -35,6 +35,10 @@ export type StudyQuestion = {
   sourceMeaningJa: string;
   explanationJa: string;
   hintJa: string;
+  exampleEn: string;
+  exampleJa: string;
+  collocationHintJa: string;
+  commonMistakeJa: string;
   levelBand: LevelBand;
 };
 

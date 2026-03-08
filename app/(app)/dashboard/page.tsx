@@ -48,10 +48,12 @@ export default async function DashboardPage() {
           <CardHeader className="space-y-4">
             <Badge className="w-fit bg-primary/10 text-primary">ダッシュボード</Badge>
             <CardTitle className="text-3xl text-slate-950 sm:text-4xl">
-              今日の学習状況を確認して、すぐ次の 1 問に進めます
+              {stats.todayCount === 0 ? "まずは今日の1問目から始めましょう" : "今日の学習状況を確認して、次の1問に進めます"}
             </CardTitle>
             <CardDescription className="max-w-xl text-base leading-7 text-slate-600">
-              学習数、復習対象、出題設定をひとつの画面で確認できます。
+              {learnSelection.question
+                ? `次のおすすめは「${learnSelection.question.prompt}」です。学習数、復習対象、出題設定をひとつの画面で確認できます。`
+                : "学習数、復習対象、出題設定をひとつの画面で確認できます。"}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -71,11 +73,11 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/learn">
-                <Button size="lg">通常学習を始める</Button>
+                <Button size="lg">{stats.todayCount === 0 ? "最初の1問を始める" : "次の1問に進む"}</Button>
               </Link>
               <Link href="/review">
                 <Button size="lg" variant="outline">
-                  復習に進む
+                  {stats.dueReviewCount > 0 ? "今日の復習を優先する" : "復習に進む"}
                 </Button>
               </Link>
             </div>
@@ -101,6 +103,11 @@ export default async function DashboardPage() {
             <div className="rounded-2xl border border-border bg-slate-50 p-5">
               <p className="text-sm font-semibold text-slate-500">本日対応が必要な復習</p>
               <p className="mt-1 text-3xl font-bold text-slate-950">{stats.dueReviewCount} 問</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {stats.dueReviewCount > 0
+                  ? "忘れかける前に回収すると、同じ問題に何度も悩みにくくなります。"
+                  : "今日の復習は一通り回収できています。新規学習に進めます。"}
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -99,9 +99,11 @@ export default async function LearnPage() {
       <LearnSession
         answerMode={selectedAnswerMode}
         choiceOptions={choiceOptions}
+        currentStreak={stats.currentStreak}
         isChecked={isChecked}
         mode="learn"
         question={question}
+        todayCount={stats.todayCount}
       />
 
       <details
