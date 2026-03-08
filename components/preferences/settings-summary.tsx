@@ -1,8 +1,4 @@
-import Link from "next/link";
-import { SlidersHorizontal } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 
 type SettingItem = {
   label: string;
@@ -13,37 +9,42 @@ export function SettingsSummary({
   title,
   description,
   items,
-  href,
+  children,
+  defaultOpen = false,
 }: {
   title: string;
   description: string;
   items: SettingItem[];
-  href: string;
+  children?: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
   return (
-    <Card className="animate-fade-up border-border/80 bg-white">
-      <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
+    <details
+      className="group animate-fade-up overflow-hidden rounded-3xl border border-border/80 bg-white"
+      open={defaultOpen}
+    >
+      <summary className="flex cursor-pointer list-none flex-col gap-4 px-6 py-5 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <CardTitle className="flex items-center gap-2 text-xl">
+          <p className="flex items-center gap-2 text-xl font-semibold text-slate-950">
             <SlidersHorizontal className="h-5 w-5 text-primary" />
             {title}
-          </CardTitle>
-          <CardDescription>{description}</CardDescription>
+          </p>
+          <p className="text-sm leading-6 text-slate-600">{description}</p>
         </div>
-        <Link href={href}>
-          <Button className="w-full md:w-auto" variant="outline">
-            設定を変更する
-          </Button>
-        </Link>
-      </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+          ここから設定を変更
+          <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
+        </div>
+      </summary>
+      <div className="grid gap-3 border-t border-border px-6 py-6 sm:grid-cols-2 xl:grid-cols-4">
         {items.map((item) => (
           <div key={item.label} className="rounded-2xl border border-border bg-slate-50 px-4 py-4">
             <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">{item.label}</p>
             <p className="mt-2 text-base font-semibold text-slate-950">{item.value}</p>
           </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+      {children ? <div className="border-t border-border px-6 py-6">{children}</div> : null}
+    </details>
   );
 }

@@ -11,8 +11,9 @@ export function normalizeAnswerMode(input: string | undefined | null): AnswerMod
 
 export function getAnswerModeFromCookies(cookieStore: {
   get(name: string): { value: string } | undefined;
-}) {
-  return normalizeAnswerMode(cookieStore.get(ANSWER_MODE_COOKIE)?.value);
+}, fallback?: AnswerMode) {
+  const value = cookieStore.get(ANSWER_MODE_COOKIE)?.value;
+  return value ? normalizeAnswerMode(value) : (fallback ?? "free_text");
 }
 
 export function labelAnswerMode(answerMode: AnswerMode) {

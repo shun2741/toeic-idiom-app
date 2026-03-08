@@ -11,8 +11,9 @@ export function normalizeQuestionType(input: string | undefined | null): Questio
 
 export function getQuestionTypeFromCookies(cookieStore: {
   get(name: string): { value: string } | undefined;
-}) {
-  return normalizeQuestionType(cookieStore.get(QUESTION_TYPE_COOKIE)?.value);
+}, fallback?: QuestionType) {
+  const value = cookieStore.get(QUESTION_TYPE_COOKIE)?.value;
+  return value ? normalizeQuestionType(value) : (fallback ?? "ja_to_idiom");
 }
 
 export function labelQuestionType(questionType: QuestionType) {

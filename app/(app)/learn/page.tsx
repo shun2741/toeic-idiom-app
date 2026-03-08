@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 
 import { LearnSession } from "@/components/learn/learn-session";
 import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
@@ -50,24 +49,37 @@ export default async function LearnPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 pt-0">
-            <details className="group rounded-3xl border border-border bg-slate-50" open>
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">学習設定</p>
-                  <p className="text-sm text-slate-600">出題形式、回答形式、レベルを変更できます。</p>
-                </div>
-                <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
-              </summary>
-              <div className="grid gap-4 border-t border-border px-5 py-5 md:grid-cols-2">
+            <SettingsSummary
+              defaultOpen
+              description={`現在の母集団は ${poolCount} 問、全体は ${stats.totalQuestions} 問です。`}
+              items={[
+                { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
+                { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
+                { label: "出題対象", value: labelQuestionSourceMode(selectedQuestionSourceMode) },
+                { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
+              ]}
+              title="現在の学習設定"
+            >
+              <div className="grid gap-4 md:grid-cols-2">
                 <QuestionSourceForm
                   checkedCount={checkedIdiomsCount}
+                  description="チェック済みだけに絞ると、マークした問題の中から学習できます。"
                   selectedMode={selectedQuestionSourceMode}
                 />
-                <AnswerModeForm selectedMode={selectedAnswerMode} />
-                <QuestionTypeForm selectedType={selectedQuestionType} />
-                <LevelFilterForm selectedBands={selectedBands} />
+                <AnswerModeForm
+                  description="移動中は選択式、定着確認では自由入力という使い分けができます。"
+                  selectedMode={selectedAnswerMode}
+                />
+                <QuestionTypeForm
+                  description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
+                  selectedType={selectedQuestionType}
+                />
+                <LevelFilterForm
+                  description="通常学習だけに反映されます。復習は期限が来た問題を優先します。"
+                  selectedBands={selectedBands}
+                />
               </div>
-            </details>
+            </SettingsSummary>
             <Link href="/dashboard">
               <Button variant="outline">ダッシュボードへ戻る</Button>
             </Link>
@@ -82,7 +94,6 @@ export default async function LearnPage() {
       <div className="grid gap-4 xl:grid-cols-[1fr_auto]">
         <SettingsSummary
           description={`現在の母集団は ${poolCount} 問、全体は ${stats.totalQuestions} 問です。`}
-          href="#study-settings"
           items={[
             { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
             { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
@@ -90,7 +101,27 @@ export default async function LearnPage() {
             { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
           ]}
           title="現在の学習設定"
-        />
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <QuestionSourceForm
+              checkedCount={checkedIdiomsCount}
+              description="チェック済みだけに絞ると、マークした問題の中から学習できます。"
+              selectedMode={selectedQuestionSourceMode}
+            />
+            <AnswerModeForm
+              description="移動中は選択式、定着確認では自由入力という使い分けができます。"
+              selectedMode={selectedAnswerMode}
+            />
+            <QuestionTypeForm
+              description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
+              selectedType={selectedQuestionType}
+            />
+            <LevelFilterForm
+              description="通常学習だけに反映されます。復習は期限が来た問題を優先します。"
+              selectedBands={selectedBands}
+            />
+          </div>
+        </SettingsSummary>
         <Link className="self-start" href="/review">
           <Button className="w-full xl:w-auto" variant="outline">復習を見る</Button>
         </Link>
@@ -105,41 +136,6 @@ export default async function LearnPage() {
         question={question}
         todayCount={stats.todayCount}
       />
-
-      <details
-        id="study-settings"
-        className="group animate-fade-up rounded-3xl border border-border/80 bg-white"
-        style={{ animationDelay: "120ms" }}
-      >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5">
-          <div>
-            <p className="text-sm font-semibold text-slate-950">学習設定</p>
-            <p className="text-sm text-slate-600">
-              英訳・和訳、選択式・自由入力、出題対象、レベルをここで変更できます。
-            </p>
-          </div>
-          <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
-        </summary>
-        <div className="grid gap-4 border-t border-border px-6 py-6 md:grid-cols-2">
-          <QuestionSourceForm
-            checkedCount={checkedIdiomsCount}
-            description="チェック済みだけに絞ると、マークした問題の中から学習できます。"
-            selectedMode={selectedQuestionSourceMode}
-          />
-          <AnswerModeForm
-            description="移動中は選択式、定着確認では自由入力という使い分けができます。"
-            selectedMode={selectedAnswerMode}
-          />
-          <QuestionTypeForm
-            description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
-            selectedType={selectedQuestionType}
-          />
-          <LevelFilterForm
-            description="通常学習だけに反映されます。復習は期限が来た問題を優先します。"
-            selectedBands={selectedBands}
-          />
-        </div>
-      </details>
     </div>
   );
 }

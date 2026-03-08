@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 
 import { BetaBanner } from "@/components/layout/beta-banner";
 import { LearnSession } from "@/components/learn/learn-session";
@@ -11,7 +10,7 @@ import { SettingsSummary } from "@/components/preferences/settings-summary";
 import { QuestionTypeForm } from "@/components/preferences/question-type-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { QUESTION_BANK } from "@/lib/data/idioms";
 import { selectGuestLearnQuestion } from "@/lib/data/repository";
 import { getAnswerModeFromCookies, labelAnswerMode } from "@/lib/preferences/answer-mode";
@@ -34,8 +33,8 @@ export default async function TrialPage({
         ? params.refresh[0]
         : undefined;
   const selectedBands = getLevelBandsFromCookies(cookieStore);
-  const selectedQuestionType = getQuestionTypeFromCookies(cookieStore);
-  const selectedAnswerMode = getAnswerModeFromCookies(cookieStore);
+  const selectedQuestionType = getQuestionTypeFromCookies(cookieStore, "idiom_to_ja");
+  const selectedAnswerMode = getAnswerModeFromCookies(cookieStore, "multiple_choice");
   const learnSelection = selectGuestLearnQuestion(
     selectedBands,
     selectedQuestionType,
@@ -74,7 +73,7 @@ export default async function TrialPage({
             <>
               <SettingsSummary
                 description={`現在の母集団は ${poolCount} 問、全体は ${QUESTION_BANK.length} 問です。`}
-                href="#trial-settings"
+                defaultOpen={!question}
                 items={[
                   { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
                   { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
@@ -82,7 +81,33 @@ export default async function TrialPage({
                   { label: "モード", value: "ログインなし体験" },
                 ]}
                 title="現在の体験設定"
-              />
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <AnswerModeForm
+                    description="体験版は和訳の選択式から始まります。必要なら自由入力にも切り替えられます。"
+                    selectedMode={selectedAnswerMode}
+                  />
+                  <QuestionTypeForm
+                    description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
+                    selectedType={selectedQuestionType}
+                  />
+                  <LevelFilterForm
+                    description="体験モードでは選択したレベル帯だけを出題します。"
+                    selectedBands={selectedBands}
+                  />
+                  <Card className="border-border bg-slate-50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">体験モードでできること</CardTitle>
+                    </CardHeader>
+                    <div className="px-6 pb-6 text-sm leading-7 text-slate-600">
+                      <p>採点結果と解説を確認できます。</p>
+                      <p>「わからない」ボタンで答えをすぐ確認できます。</p>
+                      <p>体験モードは 1 日あたりの利用回数に上限があります。</p>
+                      <p>履歴保存、復習キュー、問題チェックはログイン後に利用できます。</p>
+                    </div>
+                  </Card>
+                </div>
+              </SettingsSummary>
 
               <LearnSession
                 allowChecking={false}
@@ -97,57 +122,54 @@ export default async function TrialPage({
               />
             </>
           ) : (
-            <Card className="animate-fade-up border-border/80 bg-white">
-              <CardHeader>
-                <CardTitle className="text-2xl">体験学習</CardTitle>
-                <CardDescription>
-                  現在の条件に一致する問題がありません。設定を調整して出題範囲を変更してください。
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
-
-          <details
-            id="trial-settings"
-            className="group animate-fade-up rounded-3xl border border-border/80 bg-white"
-            style={{ animationDelay: "120ms" }}
-            open={!question}
-          >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5">
-              <div>
-                <p className="text-sm font-semibold text-slate-950">体験モードの設定</p>
-                <p className="text-sm text-slate-600">
-                  英訳・和訳、選択式・自由入力、レベルをここで変更できます。
-                </p>
-              </div>
-              <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
-            </summary>
-            <div className="grid gap-4 border-t border-border px-6 py-6 md:grid-cols-2">
-              <AnswerModeForm
-                description="スマホでは選択式、定着確認では自由入力という使い分けができます。"
-                selectedMode={selectedAnswerMode}
-              />
-              <QuestionTypeForm
-                description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
-                selectedType={selectedQuestionType}
-              />
-              <LevelFilterForm
-                description="体験モードでは選択したレベル帯だけを出題します。"
-                selectedBands={selectedBands}
-              />
-              <Card className="border-border bg-slate-50">
+            <div className="space-y-6">
+              <Card className="animate-fade-up border-border/80 bg-white">
                 <CardHeader>
-                  <CardTitle className="text-lg">体験モードでできること</CardTitle>
+                  <CardTitle className="text-2xl">体験学習</CardTitle>
+                  <CardDescription>
+                    現在の条件に一致する問題がありません。設定を調整して出題範囲を変更してください。
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2 text-sm leading-7 text-slate-600">
-                  <p>採点結果と解説を確認できます。</p>
-                  <p>「わからない」ボタンで答えをすぐ確認できます。</p>
-                  <p>体験モードは 1 日あたりの利用回数に上限があります。</p>
-                  <p>履歴保存、復習キュー、問題チェックはログイン後に利用できます。</p>
-                </CardContent>
               </Card>
+              <SettingsSummary
+                defaultOpen
+                description={`現在の母集団は ${poolCount} 問、全体は ${QUESTION_BANK.length} 問です。`}
+                items={[
+                  { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
+                  { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
+                  { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
+                  { label: "モード", value: "ログインなし体験" },
+                ]}
+                title="現在の体験設定"
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <AnswerModeForm
+                    description="体験版は和訳の選択式から始まります。必要なら自由入力にも切り替えられます。"
+                    selectedMode={selectedAnswerMode}
+                  />
+                  <QuestionTypeForm
+                    description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
+                    selectedType={selectedQuestionType}
+                  />
+                  <LevelFilterForm
+                    description="体験モードでは選択したレベル帯だけを出題します。"
+                    selectedBands={selectedBands}
+                  />
+                  <Card className="border-border bg-slate-50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">体験モードでできること</CardTitle>
+                    </CardHeader>
+                    <div className="px-6 pb-6 text-sm leading-7 text-slate-600">
+                      <p>採点結果と解説を確認できます。</p>
+                      <p>「わからない」ボタンで答えをすぐ確認できます。</p>
+                      <p>体験モードは 1 日あたりの利用回数に上限があります。</p>
+                      <p>履歴保存、復習キュー、問題チェックはログイン後に利用できます。</p>
+                    </div>
+                  </Card>
+                </div>
+              </SettingsSummary>
             </div>
-          </details>
+          )}
         </div>
       </main>
       <SiteFooter />
