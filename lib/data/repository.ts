@@ -113,6 +113,42 @@ export async function selectLearnQuestion(
   };
 }
 
+export function selectGuestLearnQuestion(
+  levelBands: LevelBand[],
+  questionType: QuestionType,
+  refreshKey?: string,
+) {
+  const filteredQuestionBank = getQuestionPool({
+    levelBands,
+    questionType,
+    questionSourceMode: "all",
+    checkedIdiomIds: [],
+  });
+
+  if (filteredQuestionBank.length === 0) {
+    return {
+      question: null,
+      poolCount: 0,
+      checkedIdiomsCount: 0,
+      choiceOptions: [],
+      isChecked: false,
+    };
+  }
+
+  const seedSource =
+    refreshKey?.trim() ||
+    `${questionType}-${levelBands.join(",")}-${new Date().toISOString().slice(0, 13)}`;
+  const question = filteredQuestionBank[hashString(seedSource) % filteredQuestionBank.length];
+
+  return {
+    question,
+    poolCount: filteredQuestionBank.length,
+    checkedIdiomsCount: 0,
+    choiceOptions: buildChoiceOptions(question, filteredQuestionBank),
+    isChecked: false,
+  };
+}
+
 export async function selectReviewQuestion(
   supabase: SupabaseClient,
   userId: string,

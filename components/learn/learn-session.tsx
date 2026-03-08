@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DONT_KNOW_SENTINEL } from "@/lib/scoring/dont-know";
 import type { AnswerMode, Judgment, ScoreResult, StudyQuestion } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
 
 type ApiResponse = {
   result: ScoreResult;
-  nextReviewAt: string;
-  intervalDays: number;
+  nextReviewAt: string | null;
+  intervalDays: number | null;
 };
 
 function judgmentLabel(judgment: Judgment) {
@@ -36,6 +37,8 @@ export function LearnSession({
   question,
   mode,
   dueCount,
+  guestMode = false,
+  allowChecking = true,
 }: {
   answerMode: AnswerMode;
   choiceOptions: string[];
@@ -43,6 +46,8 @@ export function LearnSession({
   question: StudyQuestion;
   mode: "learn" | "review";
   dueCount?: number;
+  guestMode?: boolean;
+  allowChecking?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -68,6 +73,7 @@ export function LearnSession({
           questionId: question.questionId,
           answer: submittedAnswer,
           mode,
+          guestMode,
         }),
       });
 
@@ -142,16 +148,18 @@ export function LearnSession({
               <CardTitle className="mt-1 text-2xl leading-tight sm:text-3xl">{question.prompt}</CardTitle>
               <CardDescription className="mt-2 text-base">{question.promptDescription}</CardDescription>
             </div>
-            <Button
-              className="gap-2"
-              disabled={isTogglingCheck}
-              onClick={handleToggleCheck}
-              type="button"
-              variant="outline"
-            >
-              {checked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-              {checked ? "チェック済み" : "問題をチェック"}
-            </Button>
+            {allowChecking ? (
+              <Button
+                className="gap-2"
+                disabled={isTogglingCheck}
+                onClick={handleToggleCheck}
+                type="button"
+                variant="outline"
+              >
+                {checked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                {checked ? "チェック済み" : "問題をチェック"}
+              </Button>
+            ) : null}
           </div>
         </CardHeader>
         <CardContent>
@@ -176,6 +184,17 @@ export function LearnSession({
                   ) : (
                     "回答する"
                   )}
+                </Button>
+                <Button
+                  disabled={isSubmitting || Boolean(result)}
+                  onClick={() => {
+                    void submitAnswer(DONT_KNOW_SENTINEL);
+                  }}
+                  size="lg"
+                  type="button"
+                  variant="outline"
+                >
+                  わからない
                 </Button>
                 <Button
                   disabled={isSubmitting || isMoving}
@@ -216,6 +235,17 @@ export function LearnSession({
                 ))}
               </div>
               <Button
+                disabled={Boolean(result) || isSubmitting}
+                onClick={() => {
+                  void submitAnswer(DONT_KNOW_SENTINEL);
+                }}
+                size="lg"
+                type="button"
+                variant="outline"
+              >
+                わからない
+              </Button>
+              <Button
                 disabled={isSubmitting || isMoving}
                 onClick={handleNextQuestion}
                 size="lg"
@@ -244,7 +274,9 @@ export function LearnSession({
           <CardTitle className="text-xl text-slate-950">{result ? "採点結果" : "ヒント"}</CardTitle>
           <CardDescription className="text-slate-600">
             {result
-              ? "正答、フィードバック、次回の復習予定を確認できます。"
+              ? guestMode
+                ? "正答とフィードバックを確認できます。"
+                : "正答、フィードバック、次回の復習予定を確認できます。"
               : "答えを入力する前に、思い出すための手がかりだけ確認できます。"}
           </CardDescription>
         </CardHeader>
@@ -269,13 +301,21 @@ export function LearnSession({
                 <p>英熟語: {question.sourceExpression}</p>
                 <p>意味: {question.sourceMeaningJa}</p>
                 <p>解説: {question.explanationJa}</p>
-                <p>次回復習予定: {formatDateTime(result.nextReviewAt)}</p>
-                <p>復習間隔: {result.intervalDays} 日</p>
+                {guestMode ? (
+                  <p>ログインすると、学習履歴と復習予定を保存できます。</p>
+                ) : (
+                  <>
+                    <p>次回復習予定: {result.nextReviewAt ? formatDateTime(result.nextReviewAt) : "-"}</p>
+                    <p>復習間隔: {result.intervalDays ?? "-"} 日</p>
+                  </>
+                )}
               </div>
             </div>
           ) : (
             <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-              採点後に、正誤、解説、次回復習予定がここに表示されます。
+              {guestMode
+                ? "採点後に、正誤と解説がここに表示されます。"
+                : "採点後に、正誤、解説、次回復習予定がここに表示されます。"}
             </div>
           )}
         </CardContent>

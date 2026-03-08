@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { ArrowRight, BookOpen, Brain, RotateCcw } from "lucide-react";
 
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { hasServerSupabaseEnv } from "@/lib/supabase/env";
@@ -70,7 +72,14 @@ export function LoginPanel() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <GoogleSignInButton />
+          <div className="space-y-3">
+            <GoogleSignInButton />
+            <Link href="/trial">
+              <Button className="w-full" size="lg" variant="outline">
+                ログインせずに試す
+              </Button>
+            </Link>
+          </div>
           <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm leading-7 text-slate-600">
             <p className="flex items-center gap-2 font-semibold text-slate-800">
               <ArrowRight className="h-4 w-4 text-primary" />

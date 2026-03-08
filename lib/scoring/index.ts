@@ -60,3 +60,31 @@ export async function gradeAnswer({
 
   return llmResult;
 }
+
+export async function gradeGuestAnswer({
+  question,
+  submittedAnswer,
+  llmRateLimited,
+}: {
+  question: StudyQuestion;
+  submittedAnswer: string;
+  llmRateLimited: boolean;
+}): Promise<ScoreResult> {
+  const ruleResult = scoreWithRules(question, submittedAnswer);
+
+  if (!ruleResult.shouldEscalate) {
+    return ruleResult;
+  }
+
+  if (llmRateLimited) {
+    return {
+      ...ruleResult,
+      feedbackJa:
+        "ゲストモードでのAI判定回数が短時間に集中しているため、追加判定を一時的に止めています。少し時間を空けて再度試してください。",
+      errorTags: [...ruleResult.errorTags, "guest_llm_rate_limited"],
+    };
+  }
+
+  const llmResult = await scoreWithLLM({ question, submittedAnswer });
+  return llmResult ?? ruleResult;
+}

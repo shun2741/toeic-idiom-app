@@ -1,4 +1,5 @@
 import { normalizeAnswer, normalizeJapaneseAnswer } from "@/lib/scoring/normalize";
+import { isDontKnowAnswer } from "@/lib/scoring/dont-know";
 import type { ScoreResult, StudyQuestion } from "@/lib/types";
 
 type RuleScoreResult = ScoreResult & {
@@ -57,6 +58,20 @@ export function scoreWithRules(
   question: StudyQuestion,
   submittedAnswer: string,
 ): RuleScoreResult {
+  if (isDontKnowAnswer(submittedAnswer)) {
+    return {
+      isCorrect: false,
+      score: 0,
+      judgment: "incorrect",
+      correctAnswer: question.correctAnswer,
+      feedbackJa: `今回は答えを確認しましょう。正答は「${question.correctAnswer}」です。`,
+      errorTags: ["dont_know"],
+      normalizedAnswer: "",
+      shouldEscalate: false,
+      source: "rule",
+    };
+  }
+
   if (question.questionType === "idiom_to_ja") {
     return scoreJapaneseTranslationWithRules(question, submittedAnswer);
   }

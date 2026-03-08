@@ -32,6 +32,7 @@ export async function saveLevelBandsAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/learn");
+  revalidatePath("/trial");
   revalidatePath("/");
 }
 
@@ -48,6 +49,7 @@ export async function resetLevelBandsAction() {
 
   revalidatePath("/dashboard");
   revalidatePath("/learn");
+  revalidatePath("/trial");
   revalidatePath("/");
 }
 
@@ -65,6 +67,7 @@ export async function saveQuestionTypeAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/learn");
+  revalidatePath("/trial");
   revalidatePath("/");
 }
 
@@ -82,6 +85,7 @@ export async function saveAnswerModeAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/learn");
+  revalidatePath("/trial");
   revalidatePath("/");
 }
 
@@ -101,5 +105,6 @@ export async function saveQuestionSourceModeAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/learn");
+  revalidatePath("/trial");
   revalidatePath("/");
 }
