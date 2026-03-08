@@ -3,6 +3,9 @@ import { z } from "zod";
 
 import { getQuestionById } from "@/lib/data/idioms";
 import { persistAnswer } from "@/lib/data/repository";
+import { GUEST_VERIFIED_COOKIE, isGuestVerifiedToken } from "@/lib/security/guest-captcha";
+import { getClientIp, hashIdentifier } from "@/lib/security/ip";
+import { consumeRateLimit, peekRateLimit } from "@/lib/security/rate-limit";
 import { gradeAnswer, gradeGuestAnswer } from "@/lib/scoring";
 import { normalizeAnswer } from "@/lib/scoring/normalize";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -14,6 +17,10 @@ const GUEST_LLM_LIMIT = 8;
 const GUEST_LLM_WINDOW_MS = 10 * 60 * 1000;
 const GUEST_SUBMIT_LIMIT = 80;
 const GUEST_SUBMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
+const GUEST_IP_LLM_LIMIT = 12;
+const GUEST_IP_LLM_BLOCK_MS = 30 * 60 * 1000;
+const GUEST_IP_SUBMIT_LIMIT = 120;
+const GUEST_IP_SUBMIT_BLOCK_MS = 24 * 60 * 60 * 1000;
 
 const submitPayloadSchema = z.object({
   questionId: z.string().min(1).max(100),
@@ -65,6 +72,28 @@ export async function POST(request: NextRequest) {
 
   try {
     if (payload.guestMode) {
+      if (!isGuestVerifiedToken(request.cookies.get(GUEST_VERIFIED_COOKIE)?.value)) {
+        return NextResponse.json(
+          { error: "体験モードを続けるには、もう一度利用確認を完了してください。" },
+          { status: 403 },
+        );
+      }
+
+      const ipHash = hashIdentifier(getClientIp(request));
+      const guestIpSubmit = consumeRateLimit({
+        key: `guest-submit-ip:${ipHash}`,
+        limit: GUEST_IP_SUBMIT_LIMIT,
+        windowMs: GUEST_SUBMIT_WINDOW_MS,
+        blockMs: GUEST_IP_SUBMIT_BLOCK_MS,
+      });
+
+      if (!guestIpSubmit.allowed) {
+        return NextResponse.json(
+          { error: "同じ接続元からの送信が多いため、体験モードを一時的に停止しています。" },
+          { status: 429 },
+        );
+      }
+
       const guestSubmitHits = getGuestSubmitHits(request);
       if (guestSubmitHits.length >= GUEST_SUBMIT_LIMIT) {
         return NextResponse.json(
@@ -74,10 +103,15 @@ export async function POST(request: NextRequest) {
       }
 
       const guestHits = getGuestLlmHits(request);
+      const guestIpLlm = peekRateLimit({
+        key: `guest-llm-ip:${ipHash}`,
+        limit: GUEST_IP_LLM_LIMIT,
+        windowMs: GUEST_LLM_WINDOW_MS,
+      });
       const result = await gradeGuestAnswer({
         question,
         submittedAnswer: payload.answer,
-        llmRateLimited: guestHits.length >= GUEST_LLM_LIMIT,
+        llmRateLimited: guestHits.length >= GUEST_LLM_LIMIT || !guestIpLlm.allowed,
       });
 
       const response = NextResponse.json({
@@ -87,6 +121,12 @@ export async function POST(request: NextRequest) {
       });
 
       if (result.source === "llm") {
+        consumeRateLimit({
+          key: `guest-llm-ip:${ipHash}`,
+          limit: GUEST_IP_LLM_LIMIT,
+          windowMs: GUEST_LLM_WINDOW_MS,
+          blockMs: GUEST_IP_LLM_BLOCK_MS,
+        });
         response.cookies.set(GUEST_LLM_COOKIE, [...guestHits, Date.now()].join("."), {
           httpOnly: true,
           sameSite: "lax",

@@ -5,6 +5,7 @@ import {
   isLlmRateLimited,
   storeCachedJudgment,
 } from "@/lib/data/repository";
+import { acquireLlmCircuitSlot } from "@/lib/security/llm-circuit-breaker";
 import { scoreWithLLM } from "@/lib/scoring/llm";
 import { scoreWithRules } from "@/lib/scoring/rule-based";
 import type { ScoreResult, StudyQuestion } from "@/lib/types";
@@ -45,6 +46,16 @@ export async function gradeAnswer({
     };
   }
 
+  const circuit = acquireLlmCircuitSlot();
+  if (!circuit.allowed) {
+    return {
+      ...ruleResult,
+      feedbackJa:
+        "AI 判定が短時間に集中しているため、追加の意味判定を一時的に止めています。少し時間を空けて再度試してください。",
+      errorTags: [...ruleResult.errorTags, "llm_circuit_open"],
+    };
+  }
+
   const llmResult = await scoreWithLLM({ question, submittedAnswer });
 
   if (!llmResult) {
@@ -82,6 +93,16 @@ export async function gradeGuestAnswer({
       feedbackJa:
         "ゲストモードでのAI判定回数が短時間に集中しているため、追加判定を一時的に止めています。少し時間を空けて再度試してください。",
       errorTags: [...ruleResult.errorTags, "guest_llm_rate_limited"],
+    };
+  }
+
+  const circuit = acquireLlmCircuitSlot();
+  if (!circuit.allowed) {
+    return {
+      ...ruleResult,
+      feedbackJa:
+        "体験モードでの AI 判定が短時間に集中しているため、追加判定を一時的に止めています。少し時間を空けて再度試してください。",
+      errorTags: [...ruleResult.errorTags, "guest_llm_circuit_open"],
     };
   }
 

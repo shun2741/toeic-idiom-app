@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 
 import { BetaBanner } from "@/components/layout/beta-banner";
+import { GuestCaptchaGate } from "@/components/guest/guest-captcha-gate";
 import { LearnSession } from "@/components/learn/learn-session";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
@@ -16,6 +17,7 @@ import { selectGuestLearnQuestion } from "@/lib/data/repository";
 import { getAnswerModeFromCookies, labelAnswerMode } from "@/lib/preferences/answer-mode";
 import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
 import { getQuestionTypeFromCookies, labelQuestionType } from "@/lib/preferences/question-type";
+import { GUEST_VERIFIED_COOKIE, isGuestVerifiedToken } from "@/lib/security/guest-captcha";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +37,7 @@ export default async function TrialPage({
   const selectedBands = getLevelBandsFromCookies(cookieStore);
   const selectedQuestionType = getQuestionTypeFromCookies(cookieStore, "idiom_to_ja");
   const selectedAnswerMode = getAnswerModeFromCookies(cookieStore, "multiple_choice");
+  const isGuestVerified = isGuestVerifiedToken(cookieStore.get(GUEST_VERIFIED_COOKIE)?.value);
   const learnSelection = selectGuestLearnQuestion(
     selectedBands,
     selectedQuestionType,
@@ -69,7 +72,7 @@ export default async function TrialPage({
             </CardHeader>
           </Card>
 
-          {question ? (
+          {question && isGuestVerified ? (
             <>
               <SettingsSummary
                 description={`現在の母集団は ${poolCount} 問、全体は ${QUESTION_BANK.length} 問です。`}
@@ -120,6 +123,46 @@ export default async function TrialPage({
                 question={question}
                 todayCount={0}
               />
+            </>
+          ) : question ? (
+            <>
+              <SettingsSummary
+                description={`現在の母集団は ${poolCount} 問、全体は ${QUESTION_BANK.length} 問です。`}
+                items={[
+                  { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
+                  { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
+                  { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
+                  { label: "モード", value: "ログインなし体験" },
+                ]}
+                title="現在の体験設定"
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <AnswerModeForm
+                    description="体験版は和訳の選択式から始まります。必要なら自由入力にも切り替えられます。"
+                    selectedMode={selectedAnswerMode}
+                  />
+                  <QuestionTypeForm
+                    description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
+                    selectedType={selectedQuestionType}
+                  />
+                  <LevelFilterForm
+                    description="体験モードでは選択したレベル帯だけを出題します。"
+                    selectedBands={selectedBands}
+                  />
+                  <Card className="border-border bg-slate-50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">体験モードでできること</CardTitle>
+                    </CardHeader>
+                    <div className="px-6 pb-6 text-sm leading-7 text-slate-600">
+                      <p>採点結果と解説を確認できます。</p>
+                      <p>「わからない」ボタンで答えをすぐ確認できます。</p>
+                      <p>体験モードは 1 日あたりの利用回数に上限があります。</p>
+                      <p>履歴保存、復習キュー、問題チェックはログイン後に利用できます。</p>
+                    </div>
+                  </Card>
+                </div>
+              </SettingsSummary>
+              <GuestCaptchaGate />
             </>
           ) : (
             <div className="space-y-6">
