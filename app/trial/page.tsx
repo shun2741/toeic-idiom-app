@@ -2,7 +2,9 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
+import { BetaBanner } from "@/components/layout/beta-banner";
 import { LearnSession } from "@/components/learn/learn-session";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
 import { QuestionTypeForm } from "@/components/preferences/question-type-form";
@@ -41,9 +43,10 @@ export default async function TrialPage({
   const { question, poolCount, choiceOptions, isChecked } = learnSelection;
 
   return (
-    <main className="bg-grid min-h-screen">
-      <div className="mx-auto max-w-7xl px-6 py-10 sm:px-8">
+    <div className="bg-grid min-h-screen">
+      <main className="mx-auto max-w-7xl px-6 py-10 sm:px-8">
         <div className="space-y-6">
+          <BetaBanner />
           <Card className="animate-fade-up border-border/80 bg-white">
             <CardHeader className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="space-y-3">
@@ -52,7 +55,7 @@ export default async function TrialPage({
                   保存せずに、そのまま学習を試せます
                 </CardTitle>
                 <CardDescription className="max-w-2xl text-base leading-7 text-slate-600">
-                  回答の採点までは体験できます。履歴、復習予定、問題チェックを使う場合はログインしてください。
+                  回答の採点までは体験できます。履歴、復習予定、問題チェックを使う場合はログインしてください。体験モードには 1 日あたりの利用上限があります。
                 </CardDescription>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -133,13 +136,15 @@ export default async function TrialPage({
                 <CardContent className="space-y-2 text-sm leading-7 text-slate-600">
                   <p>採点結果と解説を確認できます。</p>
                   <p>「わからない」ボタンで答えをすぐ確認できます。</p>
+                  <p>体験モードは 1 日あたりの利用回数に上限があります。</p>
                   <p>履歴保存、復習キュー、問題チェックはログイン後に利用できます。</p>
                 </CardContent>
               </Card>
             </div>
           </details>
         </div>
-      </div>
-    </main>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

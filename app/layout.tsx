@@ -12,6 +12,10 @@ const nunito = Nunito_Sans({
 export const metadata: Metadata = {
   title: "TOEIC Idiom Coach",
   description: "TOEIC 英熟語を反復学習し、復習キューで定着させる学習サービス",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({

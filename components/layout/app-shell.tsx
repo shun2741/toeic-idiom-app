@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { BookOpen, History, LayoutDashboard, LogOut, RotateCcw } from "lucide-react";
 
+import { BetaBanner } from "@/components/layout/beta-banner";
 import { NavLink } from "@/components/layout/nav-link";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -21,6 +23,9 @@ export function AppShell({
   return (
     <div className="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
+        <div className="mb-4">
+          <BetaBanner />
+        </div>
         <header className="animate-fade-up rounded-3xl border border-border/80 bg-white px-5 py-4 sm:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
@@ -67,6 +72,9 @@ export function AppShell({
         </header>
 
         <main className="mt-6">{children}</main>
+      </div>
+      <div className="mt-8">
+        <SiteFooter />
       </div>
     </div>
   );
