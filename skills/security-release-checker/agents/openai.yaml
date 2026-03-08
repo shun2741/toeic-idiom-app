@@ -1,0 +1,4 @@
+interface:
+  display_name: "Security Release Checker"
+  short_description: "公開前のデプロイ方式、秘密情報、公開範囲の安全性を点検する"
+  default_prompt: "Use $security-release-checker to review this deployment plan for hosting compatibility, secret exposure, and public release risk."
