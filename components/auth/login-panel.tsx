@@ -8,18 +8,18 @@ import { hasServerSupabaseEnv } from "@/lib/supabase/env";
 const featureItems = [
   {
     icon: BookOpen,
-    title: "固定問題で安定運用",
-    description: "TOEIC帯の重要熟語を、まずは確実に反復できる構成です。",
+    title: "TOEIC頻出熟語を厳選",
+    description: "700 から 860 レベルまで、重要表現を段階的に反復できます。",
   },
   {
     icon: Brain,
-    title: "ルールベース中心の採点",
-    description: "完全一致や軽微ミスを優先判定し、曖昧な時だけAI採点を呼びます。",
+    title: "その場で採点と解説",
+    description: "回答後すぐに正誤、フィードバック、次回復習の目安を確認できます。",
   },
   {
     icon: RotateCcw,
-    title: "復習キューで再出題",
-    description: "間違えた問題を数日単位で回収して、学習を取りこぼしません。",
+    title: "苦手だけを復習",
+    description: "間違えた問題は復習キューに入り、見直すべきタイミングで再出題されます。",
   },
 ];
 
@@ -32,11 +32,11 @@ export function LoginPanel() {
         <Badge className="bg-primary/10 text-primary">TOEIC 700-860 向け</Badge>
         <div className="space-y-4">
           <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
-            英熟語を、入力しながら定着させる学習アプリ
+            TOEIC 英熟語を、短時間で反復できる学習アプリ
           </h1>
           <p className="max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
-            日本語から英熟語を思い出して入力し、採点結果とフィードバックをその場で確認できます。
-            苦手な問題は自動で復習キューに入り、少人数運用でも扱いやすいMVPに絞っています。
+            日本語から英熟語を答える練習と、英熟語から和訳を答える練習に対応しています。
+            学習レベルや回答形式を切り替えながら、苦手な表現を繰り返し定着させられます。
           </p>
         </div>
 
@@ -64,9 +64,9 @@ export function LoginPanel() {
       <Card className="overflow-hidden border-border bg-white">
         <CardHeader className="space-y-3">
           <Badge className="w-fit bg-accent text-accent-foreground">はじめる</Badge>
-          <CardTitle className="text-2xl">ログインして学習を開始</CardTitle>
+          <CardTitle className="text-2xl">Googleアカウントで始める</CardTitle>
           <CardDescription>
-            Googleログイン後に、ダッシュボード・学習・復習・履歴を利用できます。
+            ログイン後すぐに、ダッシュボード、学習、復習、履歴を利用できます。
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -74,12 +74,17 @@ export function LoginPanel() {
           <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm leading-7 text-slate-600">
             <p className="flex items-center gap-2 font-semibold text-slate-800">
               <ArrowRight className="h-4 w-4 text-primary" />
-              初回セットアップ
+              サービス概要
             </p>
-            <p className="mt-2">
-              Supabase の URL と Publishable Key を設定し、Google プロバイダを有効化してください。
-              OpenAI は未設定でもルールベース採点で動作します。
-            </p>
+            {isConfigured ? (
+              <p className="mt-2">
+                Googleアカウントでログインすると、学習履歴と復習キューが保存されます。和訳では意味が近い表現も柔軟に判定します。
+              </p>
+            ) : (
+              <p className="mt-2">
+                開発環境では Supabase の URL と Publishable Key を設定し、Google プロバイダを有効化してください。OpenAI は未設定でも基本採点は利用できます。
+              </p>
+            )}
             {!isConfigured ? (
               <p className="mt-3 rounded-2xl bg-warning/15 px-4 py-3 text-warning">
                 現在は Supabase 環境変数が未設定です。`.env.local` を作成してからログインしてください。

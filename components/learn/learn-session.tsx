@@ -6,7 +6,7 @@ import { ArrowRight, Bookmark, BookmarkCheck, Lightbulb, Loader2, RefreshCw } fr
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { AnswerMode, Judgment, ScoreResult, StudyQuestion } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
@@ -123,28 +123,24 @@ export function LearnSession({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+    <div className="space-y-4">
       <Card className="animate-fade-up border-border/80 bg-white">
         <CardHeader className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge className="bg-primary/10 text-primary">
-              {mode === "learn" ? "通常学習" : "復習セッション"}
-            </Badge>
-            <Badge className="bg-slate-100 text-slate-700">
-              {question.questionType === "ja_to_idiom" ? "英熟語入力" : "和訳入力"}
-            </Badge>
-            <Badge>{question.levelBand} レベル帯</Badge>
-            {typeof dueCount === "number" ? (
-              <Badge className="bg-slate-100 text-slate-700">復習対象 {dueCount} 問</Badge>
-            ) : null}
-          </div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="mb-2 text-sm font-semibold text-slate-500">{question.promptLabel}</p>
-              <CardTitle className="text-2xl sm:text-3xl">{question.prompt}</CardTitle>
-              <CardDescription className="mt-2 text-base">
-                {question.promptDescription}
-              </CardDescription>
+              <p className="text-sm font-medium text-slate-500">
+                {[
+                  mode === "learn" ? "通常学習" : "復習",
+                  question.questionType === "ja_to_idiom" ? "英熟語入力" : "和訳入力",
+                  `TOEIC ${question.levelBand}`,
+                  typeof dueCount === "number" ? `復習対象 ${dueCount} 問` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </p>
+              <p className="mt-3 text-sm font-semibold text-slate-500">{question.promptLabel}</p>
+              <CardTitle className="mt-1 text-2xl leading-tight sm:text-3xl">{question.prompt}</CardTitle>
+              <CardDescription className="mt-2 text-base">{question.promptDescription}</CardDescription>
             </div>
             <Button
               className="gap-2"
@@ -166,11 +162,7 @@ export function LearnSession({
                 className="h-14 text-lg"
                 disabled={Boolean(result)}
                 maxLength={120}
-                placeholder={
-                  question.questionType === "ja_to_idiom"
-                    ? "例: put off"
-                    : "例: 延期する"
-                }
+                placeholder={question.questionType === "ja_to_idiom" ? "例: put off" : "例: 延期する"}
                 value={answer}
                 onChange={(event) => setAnswer(event.target.value)}
               />
@@ -249,9 +241,11 @@ export function LearnSession({
 
       <Card className="animate-fade-up border-border/80 bg-white" style={{ animationDelay: "120ms" }}>
         <CardHeader>
-          <CardTitle className="text-xl text-slate-950">ヒントと結果</CardTitle>
+          <CardTitle className="text-xl text-slate-950">{result ? "採点結果" : "ヒント"}</CardTitle>
           <CardDescription className="text-slate-600">
-            入力前はヒント、採点後はフィードバックと次回復習予定を表示します。
+            {result
+              ? "正答、フィードバック、次回の復習予定を確認できます。"
+              : "答えを入力する前に、思い出すための手がかりだけ確認できます。"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -281,15 +275,10 @@ export function LearnSession({
             </div>
           ) : (
             <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-              採点後に、正誤・解説・次回復習予定がここに表示されます。
+              採点後に、正誤、解説、次回復習予定がここに表示されます。
             </div>
           )}
         </CardContent>
-        <CardFooter>
-          <p className="text-sm text-slate-500">
-            AI 採点は曖昧なケースだけに限定し、通常はルールベース判定で返します。
-          </p>
-        </CardFooter>
       </Card>
     </div>
   );

@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Review Checker"
+  short_description: "画面の情報量、導線、公開向けの日本語文言を点検する"
+  default_prompt: "Use $ui-review-checker to review this UI for clarity, information density, and production-ready Japanese copy."

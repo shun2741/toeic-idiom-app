@@ -1,21 +1,22 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 
+import { LearnSession } from "@/components/learn/learn-session";
 import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
-import { QuestionTypeForm } from "@/components/preferences/question-type-form";
 import { QuestionSourceForm } from "@/components/preferences/question-source-form";
-import { LearnSession } from "@/components/learn/learn-session";
+import { QuestionTypeForm } from "@/components/preferences/question-type-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
-import { getQuestionTypeFromCookies, labelQuestionType } from "@/lib/preferences/question-type";
+import { getDashboardStats, selectLearnQuestion } from "@/lib/data/repository";
 import { getAnswerModeFromCookies, labelAnswerMode } from "@/lib/preferences/answer-mode";
+import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
 import {
   getQuestionSourceModeFromCookies,
   labelQuestionSourceMode,
 } from "@/lib/preferences/question-source";
-import { getDashboardStats, selectLearnQuestion } from "@/lib/data/repository";
+import { getQuestionTypeFromCookies, labelQuestionType } from "@/lib/preferences/question-type";
 import { requireUser } from "@/lib/supabase/auth";
 
 export default async function LearnPage() {
@@ -42,19 +43,30 @@ export default async function LearnPage() {
       <div className="space-y-6">
         <Card className="animate-fade-up border-border/80 bg-white">
           <CardHeader>
-            <CardTitle className="text-2xl">通常学習</CardTitle>
+            <CardTitle className="text-2xl">学習セッション</CardTitle>
             <CardDescription>
-              選択中のレベル帯に一致する問題がありません。別のレベルを選んでください。
+              現在の条件に一致する問題がありません。設定を調整して出題範囲を変更してください。
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 pt-0">
-            <QuestionSourceForm
-              checkedCount={checkedIdiomsCount}
-              selectedMode={selectedQuestionSourceMode}
-            />
-            <AnswerModeForm selectedMode={selectedAnswerMode} />
-            <QuestionTypeForm selectedType={selectedQuestionType} />
-            <LevelFilterForm selectedBands={selectedBands} />
+            <details className="group rounded-3xl border border-border bg-slate-50" open>
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">学習設定</p>
+                  <p className="text-sm text-slate-600">出題形式、回答形式、レベルを変更できます。</p>
+                </div>
+                <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
+              </summary>
+              <div className="grid gap-4 border-t border-border px-5 py-5 md:grid-cols-2">
+                <QuestionSourceForm
+                  checkedCount={checkedIdiomsCount}
+                  selectedMode={selectedQuestionSourceMode}
+                />
+                <AnswerModeForm selectedMode={selectedAnswerMode} />
+                <QuestionTypeForm selectedType={selectedQuestionType} />
+                <LevelFilterForm selectedBands={selectedBands} />
+              </div>
+            </details>
             <Link href="/dashboard">
               <Button variant="outline">ダッシュボードへ戻る</Button>
             </Link>
@@ -67,39 +79,62 @@ export default async function LearnPage() {
   return (
     <div className="space-y-6">
       <Card className="animate-fade-up border-border/80 bg-white">
-        <CardHeader>
-          <CardTitle className="text-2xl">通常学習</CardTitle>
-          <CardDescription>
-            {labelQuestionType(selectedQuestionType)} / {labelAnswerMode(selectedAnswerMode)} / {labelQuestionSourceMode(selectedQuestionSourceMode)} で、{selectedBands.map(labelLevelBand).join(" / ")} から出題します。現在の母集団は {poolCount} 問、全体は {stats.totalQuestions} 問です。
-          </CardDescription>
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-2">
+            <CardTitle className="text-2xl">学習セッション</CardTitle>
+            <CardDescription>
+              {labelQuestionType(selectedQuestionType)} / {labelAnswerMode(selectedAnswerMode)} /{" "}
+              {labelQuestionSourceMode(selectedQuestionSourceMode)} で出題しています。現在の母集団は{" "}
+              {poolCount} 問、全体は {stats.totalQuestions} 問です。
+            </CardDescription>
+          </div>
+          <Link href="/review">
+            <Button variant="outline">復習を見る</Button>
+          </Link>
         </CardHeader>
-        <CardContent className="space-y-5 pt-0">
+      </Card>
+
+      <LearnSession
+        answerMode={selectedAnswerMode}
+        choiceOptions={choiceOptions}
+        isChecked={isChecked}
+        mode="learn"
+        question={question}
+      />
+
+      <details
+        className="group animate-fade-up rounded-3xl border border-border/80 bg-white"
+        style={{ animationDelay: "120ms" }}
+      >
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5">
+          <div>
+            <p className="text-sm font-semibold text-slate-950">学習設定</p>
+            <p className="text-sm text-slate-600">
+              レベルは {selectedBands.map(labelLevelBand).join(" / ")}。必要なときだけ設定を開けます。
+            </p>
+          </div>
+          <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
+        </summary>
+        <div className="grid gap-4 border-t border-border px-6 py-6 md:grid-cols-2">
           <QuestionSourceForm
             checkedCount={checkedIdiomsCount}
-            description="チェック済みのみを選ぶと、チェックした熟語の中からだけ通常学習で出題します。"
+            description="チェック済みだけに絞ると、マークした問題の中から学習できます。"
             selectedMode={selectedQuestionSourceMode}
           />
           <AnswerModeForm
-            description="スマホでは選択式、しっかり覚える時は自由入力、という使い分けができます。"
+            description="移動中は選択式、定着確認では自由入力という使い分けができます。"
             selectedMode={selectedAnswerMode}
           />
           <QuestionTypeForm
-            description="通常学習の問題形式を選びます。和訳入力では、意味が近い表現を AI で補助判定します。"
+            description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
             selectedType={selectedQuestionType}
           />
           <LevelFilterForm
-            description="通常学習だけに反映されます。復習モードでは、期限が来た問題をレベル設定より優先して出題します。"
+            description="通常学習だけに反映されます。復習は期限が来た問題を優先します。"
             selectedBands={selectedBands}
           />
-          <LearnSession
-            answerMode={selectedAnswerMode}
-            choiceOptions={choiceOptions}
-            isChecked={isChecked}
-            mode="learn"
-            question={question}
-          />
-        </CardContent>
-      </Card>
+        </div>
+      </details>
     </div>
   );
 }

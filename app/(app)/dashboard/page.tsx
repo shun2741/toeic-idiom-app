@@ -46,12 +46,12 @@ export default async function DashboardPage() {
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="animate-fade-up overflow-hidden border-border/80 bg-white">
           <CardHeader className="space-y-4">
-            <Badge className="w-fit bg-primary/10 text-primary">学習ホーム</Badge>
+            <Badge className="w-fit bg-primary/10 text-primary">ダッシュボード</Badge>
             <CardTitle className="text-3xl text-slate-950 sm:text-4xl">
-              今日の復習と新規学習を、同じ流れで回せます
+              今日の学習状況を確認して、すぐ次の 1 問に進めます
             </CardTitle>
             <CardDescription className="max-w-xl text-base leading-7 text-slate-600">
-              学習履歴と復習キューをまとめて見ながら、すぐ次のセッションに進める構成です。
+              学習数、復習対象、出題設定をひとつの画面で確認できます。
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -86,9 +86,9 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <Sparkles className="h-5 w-5 text-primary" />
-              今日の進み具合
+              今日の進捗
             </CardTitle>
-            <CardDescription>最低 10 問を目安に、無理なく継続できるペースです。</CardDescription>
+            <CardDescription>まずは 10 問を目安に、短時間でも継続できる設計です。</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
               <Clock3 className="h-5 w-5 text-primary" />
               直近の回答
             </CardTitle>
-            <CardDescription>最近の学習ログを最大 6 件表示します。</CardDescription>
+            <CardDescription>最近の学習結果を最大 6 件表示します。</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {recentAnswers.length === 0 ? (
@@ -183,21 +183,21 @@ export default async function DashboardPage() {
         <Card className="animate-fade-up border-border/80 bg-white" style={{ animationDelay: "120ms" }}>
           <CardHeader>
             <CardTitle>使い方</CardTitle>
-            <CardDescription>学習の流れを簡潔に固定して、継続しやすくしています。</CardDescription>
+            <CardDescription>迷わず進められるように、学習の流れを 3 段階に整理しています。</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             {[
               {
                 title: "1. 通常学習",
-                body: "日本語の意味を見て、英熟語を自由入力します。",
+                body: "その日の設定に合わせて、英熟語または和訳の問題に取り組みます。",
               },
               {
                 title: "2. 採点",
-                body: "完全一致・軽微ミスをルールで判定し、曖昧な時だけ AI に回します。",
+                body: "回答後すぐに正誤とフィードバックを確認できます。",
               },
               {
                 title: "3. 復習",
-                body: "結果に応じて 1, 2, 4 日以上で再出題されます。",
+                body: "苦手な問題は復習キューに入り、次回の見直しにつながります。",
               },
             ].map((item) => (
               <div key={item.title} className="rounded-2xl border border-border bg-slate-50 p-5">

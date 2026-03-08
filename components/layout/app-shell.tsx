@@ -35,7 +35,7 @@ export function AppShell({
                   TOEIC Idiom Coach
                 </p>
                 <p className="text-sm text-slate-600">
-                  自由入力で英熟語を定着させる学習ダッシュボード
+                  TOEIC 英熟語を反復学習するオンライン学習サービス
                 </p>
               </div>
             </div>

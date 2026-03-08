@@ -40,9 +40,9 @@ export default async function ReviewPage() {
     <div className="space-y-6">
       <Card className="animate-fade-up border-border/80 bg-white">
         <CardHeader>
-          <CardTitle className="text-2xl">復習キュー</CardTitle>
+          <CardTitle className="text-2xl">復習セッション</CardTitle>
           <CardDescription>
-            期日が来ている問題だけを出題します。現在 {dueCount} 問が対象です。復習は学習レベル設定に関係なく優先して出題します。回答形式は現在 {labelAnswerMode(answerMode)} です。
+            期日が来ている問題から順に出題します。現在の対象は {dueCount} 問で、回答形式は {labelAnswerMode(answerMode)} です。
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
