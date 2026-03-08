@@ -1,14 +1,21 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 
 import { LearnSession } from "@/components/learn/learn-session";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAnswerModeFromCookies, labelAnswerMode } from "@/lib/preferences/answer-mode";
 import { selectReviewQuestion } from "@/lib/data/repository";
 import { requireUser } from "@/lib/supabase/auth";
 
 export default async function ReviewPage() {
+  const cookieStore = await cookies();
+  const answerMode = getAnswerModeFromCookies(cookieStore);
   const { user, supabase } = await requireUser();
-  const { question, dueCount } = await selectReviewQuestion(supabase, user.id);
+  const { question, dueCount, choiceOptions, isChecked } = await selectReviewQuestion(
+    supabase,
+    user.id,
+  );
 
   if (!question) {
     return (
@@ -35,11 +42,18 @@ export default async function ReviewPage() {
         <CardHeader>
           <CardTitle className="text-2xl">復習キュー</CardTitle>
           <CardDescription>
-            期日が来ている問題だけを出題します。現在 {dueCount} 問が対象です。復習は学習レベル設定に関係なく優先して出題します。
+            期日が来ている問題だけを出題します。現在 {dueCount} 問が対象です。復習は学習レベル設定に関係なく優先して出題します。回答形式は現在 {labelAnswerMode(answerMode)} です。
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
-          <LearnSession dueCount={dueCount} mode="review" question={question} />
+          <LearnSession
+            answerMode={answerMode}
+            choiceOptions={choiceOptions}
+            dueCount={dueCount}
+            isChecked={isChecked}
+            mode="review"
+            question={question}
+          />
         </CardContent>
       </Card>
     </div>

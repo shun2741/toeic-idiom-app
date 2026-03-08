@@ -67,6 +67,10 @@ OpenAI を使う場合だけ以下も設定してください。
 `[20260307_add_translation_questions.sql](/Users/shun/Desktop/codex-app/toeic-idiom-app/supabase/migrations/20260307_add_translation_questions.sql)`
 も実行してください。
 
+問題チェック機能と「チェック済みのみ出題」を使う場合は、さらに
+`[20260308_add_checked_idioms.sql](/Users/shun/Desktop/codex-app/toeic-idiom-app/supabase/migrations/20260308_add_checked_idioms.sql)`
+も実行してください。
+
 ### 4. Google ログインを有効化
 
 Supabase Dashboard で Google Provider を設定し、以下のコールバック URL を登録してください。

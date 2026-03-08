@@ -1,7 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { QUESTION_BANK, getQuestionById } from "@/lib/data/idioms";
-import type { LevelBand, QuestionType } from "@/lib/types";
+import type {
+  LevelBand,
+  QuestionSourceMode,
+  QuestionType,
+} from "@/lib/types";
 import { computeReviewIntervalDays } from "@/lib/review/schedule";
 import type {
   DailyHistory,
@@ -32,13 +36,24 @@ export async function selectLearnQuestion(
   userId: string,
   levelBands: LevelBand[],
   questionType: QuestionType,
+  questionSourceMode: QuestionSourceMode,
 ) {
-  const filteredQuestionBank = QUESTION_BANK.filter((question) =>
-    levelBands.includes(question.levelBand) && question.questionType === questionType,
-  );
+  const checkedIdiomIds = await getCheckedIdiomIds(supabase, userId);
+  const filteredQuestionBank = getQuestionPool({
+    levelBands,
+    questionType,
+    questionSourceMode,
+    checkedIdiomIds,
+  });
 
   if (filteredQuestionBank.length === 0) {
-    return null;
+    return {
+      question: null,
+      poolCount: 0,
+      checkedIdiomsCount: checkedIdiomIds.length,
+      choiceOptions: [],
+      isChecked: false,
+    };
   }
 
   const { data, error } = await supabase
@@ -69,10 +84,16 @@ export async function selectLearnQuestion(
 
   const unanswered = filteredQuestionBank.find((question) => !counts.has(question.questionId));
   if (unanswered) {
-    return unanswered;
+    return {
+      question: unanswered,
+      poolCount: filteredQuestionBank.length,
+      checkedIdiomsCount: checkedIdiomIds.length,
+      choiceOptions: buildChoiceOptions(unanswered, filteredQuestionBank),
+      isChecked: checkedIdiomIds.includes(unanswered.idiomId),
+    };
   }
 
-  return [...filteredQuestionBank].sort((a, b) => {
+  const question = [...filteredQuestionBank].sort((a, b) => {
     const left = counts.get(a.questionId)!;
     const right = counts.get(b.questionId)!;
 
@@ -82,12 +103,21 @@ export async function selectLearnQuestion(
 
     return left.latest - right.latest;
   })[0];
+
+  return {
+    question,
+    poolCount: filteredQuestionBank.length,
+    checkedIdiomsCount: checkedIdiomIds.length,
+    choiceOptions: buildChoiceOptions(question, filteredQuestionBank),
+    isChecked: checkedIdiomIds.includes(question.idiomId),
+  };
 }
 
 export async function selectReviewQuestion(
   supabase: SupabaseClient,
   userId: string,
 ) {
+  const checkedIdiomIds = await getCheckedIdiomIds(supabase, userId);
   const { data, error, count } = await supabase
     .from("review_queue")
     .select("question_id, due_at", { count: "exact" })
@@ -101,9 +131,19 @@ export async function selectReviewQuestion(
   }
 
   const questionId = data?.[0]?.question_id;
+  const question = questionId ? getQuestionById(questionId) : null;
   return {
-    question: questionId ? getQuestionById(questionId) : null,
+    question,
     dueCount: count ?? 0,
+    choiceOptions: question
+      ? buildChoiceOptions(
+          question,
+          QUESTION_BANK.filter(
+            (candidate) => candidate.questionType === question.questionType,
+          ),
+        )
+      : [],
+    isChecked: question ? checkedIdiomIds.includes(question.idiomId) : false,
   };
 }
 
@@ -114,7 +154,13 @@ export async function getDashboardStats(
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [{ data: todayAnswers, error: todayError }, { count: dueReviewCount, error: reviewError }, { data: recentAnswers, error: recentError }, { data: weakRows, error: weakError }] =
+  const [
+    { data: todayAnswers, error: todayError },
+    { count: dueReviewCount, error: reviewError },
+    { data: recentAnswers, error: recentError },
+    { data: weakRows, error: weakError },
+    checkedIdiomIds,
+  ] =
     await Promise.all([
       supabase
         .from("user_answers")
@@ -137,6 +183,7 @@ export async function getDashboardStats(
         .select("question_id")
         .eq("user_id", userId)
         .neq("last_judgment", "correct"),
+      getCheckedIdiomIds(supabase, userId),
     ]);
 
   if (todayError || reviewError || recentError || weakError) {
@@ -165,6 +212,9 @@ export async function getDashboardStats(
     weakCount: weakRows?.length ?? 0,
     dueReviewCount: dueReviewCount ?? 0,
     currentStreak,
+    totalIdioms: new Set(QUESTION_BANK.map((question) => question.idiomId)).size,
+    totalQuestions: QUESTION_BANK.length,
+    checkedIdiomsCount: checkedIdiomIds.length,
   };
 }
 
@@ -264,6 +314,90 @@ export async function isLlmRateLimited(
   }
 
   return (count ?? 0) >= 20;
+}
+
+export async function getCheckedIdiomIds(
+  supabase: SupabaseClient,
+  userId: string,
+) {
+  const { data, error } = await supabase
+    .from("checked_idioms")
+    .select("idiom_id")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Failed to fetch checked idioms", error);
+    return [] as string[];
+  }
+
+  return (data ?? []).map((item) => item.idiom_id);
+}
+
+function getQuestionPool({
+  levelBands,
+  questionType,
+  questionSourceMode,
+  checkedIdiomIds,
+}: {
+  levelBands: LevelBand[];
+  questionType: QuestionType;
+  questionSourceMode: QuestionSourceMode;
+  checkedIdiomIds: string[];
+}) {
+  return QUESTION_BANK.filter((question) => {
+    if (!levelBands.includes(question.levelBand) || question.questionType !== questionType) {
+      return false;
+    }
+
+    if (questionSourceMode === "checked_only") {
+      return checkedIdiomIds.includes(question.idiomId);
+    }
+
+    return true;
+  });
+}
+
+function hashString(input: string) {
+  let hash = 0;
+
+  for (let index = 0; index < input.length; index += 1) {
+    hash = (hash * 31 + input.charCodeAt(index)) >>> 0;
+  }
+
+  return hash;
+}
+
+export function buildChoiceOptions(
+  question: StudyQuestion,
+  questionPool: StudyQuestion[],
+) {
+  const candidates = questionPool.filter(
+    (candidate) =>
+      candidate.questionId !== question.questionId &&
+      candidate.questionType === question.questionType,
+  );
+
+  const levelMatched = candidates.filter(
+    (candidate) => candidate.levelBand === question.levelBand,
+  );
+  const source = levelMatched.length >= 3 ? levelMatched : candidates;
+
+  const distractors = [...source]
+    .sort(
+      (left, right) =>
+        hashString(`${question.questionId}-${left.questionId}`) -
+        hashString(`${question.questionId}-${right.questionId}`),
+    )
+    .slice(0, 3)
+    .map((candidate) => candidate.correctAnswer);
+
+  return [...new Set([question.correctAnswer, ...distractors])]
+    .sort(
+      (left, right) =>
+        hashString(`${question.questionId}-${left}`) -
+        hashString(`${question.questionId}-${right}`),
+    )
+    .slice(0, 4);
 }
 
 export async function getCachedJudgment(

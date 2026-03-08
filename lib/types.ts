@@ -1,6 +1,8 @@
 export type Judgment = "correct" | "almost_correct" | "incorrect";
 export type LevelBand = "700" | "730" | "780" | "860";
 export type QuestionType = "ja_to_idiom" | "idiom_to_ja";
+export type AnswerMode = "free_text" | "multiple_choice";
+export type QuestionSourceMode = "all" | "checked_only";
 
 export type IdiomSeed = {
   id: string;
@@ -52,6 +54,9 @@ export type DashboardStats = {
   weakCount: number;
   dueReviewCount: number;
   currentStreak: number;
+  totalIdioms: number;
+  totalQuestions: number;
+  checkedIdiomsCount: number;
 };
 
 export type DailyHistory = {

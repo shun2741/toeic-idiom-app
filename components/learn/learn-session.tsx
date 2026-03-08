@@ -2,13 +2,13 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { ArrowRight, Lightbulb, Loader2, RefreshCw } from "lucide-react";
+import { ArrowRight, Bookmark, BookmarkCheck, Lightbulb, Loader2, RefreshCw } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { Judgment, ScoreResult, StudyQuestion } from "@/lib/types";
+import type { AnswerMode, Judgment, ScoreResult, StudyQuestion } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
 
 type ApiResponse = {
@@ -30,10 +30,16 @@ function judgmentClassName(judgment: Judgment) {
 }
 
 export function LearnSession({
+  answerMode,
+  choiceOptions,
+  isChecked,
   question,
   mode,
   dueCount,
 }: {
+  answerMode: AnswerMode;
+  choiceOptions: string[];
+  isChecked: boolean;
   question: StudyQuestion;
   mode: "learn" | "review";
   dueCount?: number;
@@ -41,14 +47,14 @@ export function LearnSession({
   const router = useRouter();
   const pathname = usePathname();
   const [answer, setAnswer] = useState("");
+  const [checked, setChecked] = useState(isChecked);
   const [result, setResult] = useState<ApiResponse | null>(null);
   const [isSubmitting, startSubmitting] = useTransition();
   const [isMoving, startMoving] = useTransition();
+  const [isTogglingCheck, startTogglingCheck] = useTransition();
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!answer.trim() || isSubmitting) {
+  async function submitAnswer(submittedAnswer: string) {
+    if (!submittedAnswer.trim() || isSubmitting) {
       return;
     }
 
@@ -60,7 +66,7 @@ export function LearnSession({
         },
         body: JSON.stringify({
           questionId: question.questionId,
-          answer,
+          answer: submittedAnswer,
           mode,
         }),
       });
@@ -76,11 +82,42 @@ export function LearnSession({
     });
   }
 
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await submitAnswer(answer);
+  }
+
   function handleNextQuestion() {
     startMoving(() => {
       setAnswer("");
       setResult(null);
+      setChecked(isChecked);
       router.replace(`${pathname}?refresh=${Date.now()}`, { scroll: false });
+      router.refresh();
+    });
+  }
+
+  function handleToggleCheck() {
+    startTogglingCheck(async () => {
+      const nextChecked = !checked;
+      const response = await fetch("/api/checks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idiomId: question.idiomId,
+          checked: nextChecked,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        window.alert(payload?.error ?? "チェック更新に失敗しました。");
+        return;
+      }
+
+      setChecked(nextChecked);
       router.refresh();
     });
   }
@@ -101,40 +138,91 @@ export function LearnSession({
               <Badge className="bg-slate-100 text-slate-700">復習対象 {dueCount} 問</Badge>
             ) : null}
           </div>
-          <div>
-            <p className="mb-2 text-sm font-semibold text-slate-500">{question.promptLabel}</p>
-            <CardTitle className="text-2xl sm:text-3xl">{question.prompt}</CardTitle>
-            <CardDescription className="mt-2 text-base">
-              {question.promptDescription}
-            </CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="mb-2 text-sm font-semibold text-slate-500">{question.promptLabel}</p>
+              <CardTitle className="text-2xl sm:text-3xl">{question.prompt}</CardTitle>
+              <CardDescription className="mt-2 text-base">
+                {question.promptDescription}
+              </CardDescription>
+            </div>
+            <Button
+              className="gap-2"
+              disabled={isTogglingCheck}
+              onClick={handleToggleCheck}
+              type="button"
+              variant="outline"
+            >
+              {checked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              {checked ? "チェック済み" : "問題をチェック"}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <Input
-              autoComplete="off"
-              className="h-14 text-lg"
-              disabled={Boolean(result)}
-              maxLength={120}
-              placeholder={
-                question.questionType === "ja_to_idiom"
-                  ? "例: put off"
-                  : "例: 延期する"
-              }
-              value={answer}
-              onChange={(event) => setAnswer(event.target.value)}
-            />
-            <div className="flex flex-wrap gap-3">
-              <Button disabled={!answer.trim() || isSubmitting || Boolean(result)} size="lg" type="submit">
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    採点中...
-                  </>
-                ) : (
-                  "回答する"
-                )}
-              </Button>
+          {answerMode === "free_text" ? (
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <Input
+                autoComplete="off"
+                className="h-14 text-lg"
+                disabled={Boolean(result)}
+                maxLength={120}
+                placeholder={
+                  question.questionType === "ja_to_idiom"
+                    ? "例: put off"
+                    : "例: 延期する"
+                }
+                value={answer}
+                onChange={(event) => setAnswer(event.target.value)}
+              />
+              <div className="flex flex-wrap gap-3">
+                <Button disabled={!answer.trim() || isSubmitting || Boolean(result)} size="lg" type="submit">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      採点中...
+                    </>
+                  ) : (
+                    "回答する"
+                  )}
+                </Button>
+                <Button
+                  disabled={isSubmitting || isMoving}
+                  onClick={handleNextQuestion}
+                  size="lg"
+                  type="button"
+                  variant="outline"
+                >
+                  {isMoving ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      更新中...
+                    </>
+                  ) : (
+                    <>
+                      次の問題へ
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {choiceOptions.map((choice) => (
+                  <button
+                    key={choice}
+                    className="rounded-2xl border border-border bg-slate-50 px-4 py-4 text-left text-base font-semibold text-slate-800 transition hover:border-primary/30 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={Boolean(result) || isSubmitting}
+                    onClick={() => {
+                      void submitAnswer(choice);
+                    }}
+                    type="button"
+                  >
+                    {choice}
+                  </button>
+                ))}
+              </div>
               <Button
                 disabled={isSubmitting || isMoving}
                 onClick={handleNextQuestion}
@@ -155,7 +243,7 @@ export function LearnSession({
                 )}
               </Button>
             </div>
-          </form>
+          )}
         </CardContent>
       </Card>
 

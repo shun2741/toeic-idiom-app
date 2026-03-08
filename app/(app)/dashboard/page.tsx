@@ -2,16 +2,23 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { ArrowRight, Clock3, Sparkles } from "lucide-react";
 
+import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
 import { QuestionTypeForm } from "@/components/preferences/question-type-form";
+import { QuestionSourceForm } from "@/components/preferences/question-source-form";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
 import { getQuestionTypeFromCookies, labelQuestionType } from "@/lib/preferences/question-type";
+import { getAnswerModeFromCookies, labelAnswerMode } from "@/lib/preferences/answer-mode";
+import {
+  getQuestionSourceModeFromCookies,
+  labelQuestionSourceMode,
+} from "@/lib/preferences/question-source";
 import { Progress } from "@/components/ui/progress";
-import { getDashboardStats, getRecentAnswers } from "@/lib/data/repository";
+import { getDashboardStats, getRecentAnswers, selectLearnQuestion } from "@/lib/data/repository";
 import { requireUser } from "@/lib/supabase/auth";
 import { formatDateTime } from "@/lib/utils";
 
@@ -19,10 +26,19 @@ export default async function DashboardPage() {
   const cookieStore = await cookies();
   const selectedBands = getLevelBandsFromCookies(cookieStore);
   const selectedQuestionType = getQuestionTypeFromCookies(cookieStore);
+  const selectedAnswerMode = getAnswerModeFromCookies(cookieStore);
+  const selectedQuestionSourceMode = getQuestionSourceModeFromCookies(cookieStore);
   const { user, supabase } = await requireUser();
-  const [stats, recentAnswers] = await Promise.all([
+  const [stats, recentAnswers, learnSelection] = await Promise.all([
     getDashboardStats(supabase, user.id),
     getRecentAnswers(supabase, user.id),
+    selectLearnQuestion(
+      supabase,
+      user.id,
+      selectedBands,
+      selectedQuestionType,
+      selectedQuestionSourceMode,
+    ),
   ]);
 
   return (
@@ -49,8 +65,8 @@ export default async function DashboardPage() {
                 <p className="mt-2 text-2xl font-bold text-slate-950">{stats.dueReviewCount} 問</p>
               </div>
               <div className="rounded-2xl border border-border bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-500">連続正答</p>
-                <p className="mt-2 text-2xl font-bold text-slate-950">{stats.currentStreak} 回</p>
+                <p className="text-sm font-semibold text-slate-500">総問題数</p>
+                <p className="mt-2 text-2xl font-bold text-slate-950">{stats.totalQuestions} 問</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -97,10 +113,21 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>現在の出題設定</CardTitle>
             <CardDescription>
-              通常学習では {labelQuestionType(selectedQuestionType)} で、{selectedBands.map(labelLevelBand).join(" / ")} を優先します。
+              通常学習では {labelQuestionType(selectedQuestionType)} / {labelAnswerMode(selectedAnswerMode)} / {labelQuestionSourceMode(selectedQuestionSourceMode)} を使います。
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
+            <div className="rounded-2xl border border-border bg-white p-4 text-sm leading-7 text-slate-600">
+              <p>全体: {stats.totalIdioms} 熟語 / {stats.totalQuestions} 問</p>
+              <p>現在の出題母集団: {learnSelection.poolCount} 問</p>
+              <p>チェック済み問題: {learnSelection.checkedIdiomsCount} 件</p>
+              <p>レベル: {selectedBands.map(labelLevelBand).join(" / ")}</p>
+            </div>
+            <QuestionSourceForm
+              checkedCount={learnSelection.checkedIdiomsCount}
+              selectedMode={selectedQuestionSourceMode}
+            />
+            <AnswerModeForm selectedMode={selectedAnswerMode} />
             <QuestionTypeForm selectedType={selectedQuestionType} />
             <LevelFilterForm selectedBands={selectedBands} />
           </CardContent>
