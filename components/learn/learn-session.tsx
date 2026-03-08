@@ -2,7 +2,18 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { ArrowRight, Bookmark, BookmarkCheck, Lightbulb, Loader2, RefreshCw } from "lucide-react";
+import {
+  ArrowRight,
+  Bookmark,
+  BookmarkCheck,
+  CheckCircle2,
+  ChevronDown,
+  CircleAlert,
+  Lightbulb,
+  Loader2,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +39,30 @@ function judgmentClassName(judgment: Judgment) {
   if (judgment === "correct") return "bg-emerald-100 text-emerald-700";
   if (judgment === "almost_correct") return "bg-amber-100 text-amber-700";
   return "bg-rose-100 text-rose-700";
+}
+
+function resultPanelClassName(judgment: Judgment) {
+  if (judgment === "correct") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-950";
+  }
+
+  if (judgment === "almost_correct") {
+    return "border-amber-200 bg-amber-50 text-amber-950";
+  }
+
+  return "border-rose-200 bg-rose-50 text-rose-950";
+}
+
+function ResultIcon({ judgment }: { judgment: Judgment }) {
+  if (judgment === "correct") {
+    return <CheckCircle2 className="h-6 w-6 text-emerald-600" />;
+  }
+
+  if (judgment === "almost_correct") {
+    return <CircleAlert className="h-6 w-6 text-amber-600" />;
+  }
+
+  return <XCircle className="h-6 w-6 text-rose-600" />;
 }
 
 export function LearnSession({
@@ -270,59 +305,101 @@ export function LearnSession({
               </Button>
             </div>
           )}
+
         </CardContent>
-      </Card>
-
-      <Card className="animate-fade-up border-border/80 bg-white" style={{ animationDelay: "120ms" }}>
-        <CardHeader>
-          <CardTitle className="text-xl text-slate-950">{result ? "採点結果" : "ヒント"}</CardTitle>
-          <CardDescription className="text-slate-600">
-            {result
-              ? guestMode
-                ? "正答とフィードバックを確認できます。"
-                : "正答、フィードバック、次回の復習予定を確認できます。"
-              : "答えを入力する前に、思い出すための手がかりだけ確認できます。"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-2xl border border-border bg-slate-50 p-5">
-            <p className="flex items-center gap-2 text-sm font-semibold text-primary">
-              <Lightbulb className="h-4 w-4" />
-              ヒント
-            </p>
-            <p className="mt-2 leading-7 text-slate-700">{question.hintJa}</p>
-          </div>
-
-          {result ? (
-            <div className="space-y-4 rounded-2xl border border-border bg-slate-50 p-5 text-slate-900">
-              <Badge className={judgmentClassName(result.result.judgment)}>
-                {judgmentLabel(result.result.judgment)}
-              </Badge>
-              <p className="text-sm font-semibold text-slate-500">正答</p>
-              <p className="text-2xl font-bold">{result.result.correctAnswer}</p>
-              <p className="leading-7 text-slate-600">{result.result.feedbackJa}</p>
-              <div className="rounded-2xl border border-border bg-white p-4 text-sm leading-7 text-slate-600">
-                <p>英熟語: {question.sourceExpression}</p>
-                <p>意味: {question.sourceMeaningJa}</p>
-                <p>解説: {question.explanationJa}</p>
-                {guestMode ? (
-                  <p>ログインすると、学習履歴と復習予定を保存できます。</p>
-                ) : (
-                  <>
-                    <p>次回復習予定: {result.nextReviewAt ? formatDateTime(result.nextReviewAt) : "-"}</p>
-                    <p>復習間隔: {result.intervalDays ?? "-"} 日</p>
-                  </>
-                )}
+        {!result ? (
+          <div className="border-t border-border px-6 pb-6">
+            <details className="group rounded-2xl border border-border bg-slate-50">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4">
+                <div>
+                  <p className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <Lightbulb className="h-4 w-4" />
+                    ヒントを見る
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    答えを考えてから、必要なときだけ開いてください。
+                  </p>
+                </div>
+                <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
+              </summary>
+              <div className="border-t border-border px-4 py-4 text-sm leading-7 text-slate-700">
+                {question.hintJa}
               </div>
+            </details>
+          </div>
+        ) : (
+          <div className="border-t border-border px-6 pb-6">
+            <div
+              className={`space-y-4 rounded-3xl border p-5 sm:p-6 ${resultPanelClassName(result.result.judgment)}`}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <ResultIcon judgment={result.result.judgment} />
+                    <div>
+                      <p className="text-sm font-semibold tracking-wide text-current/70">
+                        採点結果
+                      </p>
+                      <p className="text-2xl font-bold">{judgmentLabel(result.result.judgment)}</p>
+                    </div>
+                  </div>
+                  <Badge className={judgmentClassName(result.result.judgment)}>
+                    {judgmentLabel(result.result.judgment)}
+                  </Badge>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-current/70">正答</p>
+                    <p className="text-2xl font-bold">{result.result.correctAnswer}</p>
+                  </div>
+                  <p className="leading-7 text-current/85">{result.result.feedbackJa}</p>
+                </div>
+                <Button
+                  className="w-full sm:w-auto"
+                  disabled={isSubmitting || isMoving}
+                  onClick={handleNextQuestion}
+                  size="lg"
+                  type="button"
+                >
+                  {isMoving ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      更新中...
+                    </>
+                  ) : (
+                    <>
+                      次の問題へ
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <details className="group rounded-2xl border border-white/70 bg-white/80">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">解説を見る</p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      意味、解説、復習予定を必要なときだけ確認できます。
+                    </p>
+                  </div>
+                  <ChevronDown className="h-5 w-5 text-slate-500 transition group-open:rotate-180" />
+                </summary>
+                <div className="space-y-2 border-t border-border px-4 py-4 text-sm leading-7 text-slate-700">
+                  <p>英熟語: {question.sourceExpression}</p>
+                  <p>意味: {question.sourceMeaningJa}</p>
+                  <p>解説: {question.explanationJa}</p>
+                  {guestMode ? (
+                    <p>ログインすると、学習履歴と復習予定を保存できます。</p>
+                  ) : (
+                    <>
+                      <p>次回復習予定: {result.nextReviewAt ? formatDateTime(result.nextReviewAt) : "-"}</p>
+                      <p>復習間隔: {result.intervalDays ?? "-"} 日</p>
+                    </>
+                  )}
+                </div>
+              </details>
             </div>
-          ) : (
-            <div className="rounded-2xl border border-border bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-              {guestMode
-                ? "採点後に、正誤と解説がここに表示されます。"
-                : "採点後に、正誤、解説、次回復習予定がここに表示されます。"}
-            </div>
-          )}
-        </CardContent>
+          </div>
+        )}
       </Card>
     </div>
   );
