@@ -76,6 +76,10 @@ export function scoreWithRules(
     return scoreSentenceTranslationWithRules(question, submittedAnswer);
   }
 
+  if (question.questionType === "sentence_ja_to_en") {
+    return scoreSentenceTranslationToEnglishWithRules(question, submittedAnswer);
+  }
+
   if (question.questionType === "idiom_to_ja") {
     return scoreJapaneseTranslationWithRules(question, submittedAnswer);
   }
@@ -281,5 +285,49 @@ function scoreSentenceTranslationWithRules(
     true,
     "英文の和訳は表現の幅があるため、文全体の意味が保たれているかを追加で判定します。",
     normalizedAnswer.length <= 4 ? ["sentence_translation_too_short", "needs_semantic_check"] : ["needs_semantic_check"],
+  );
+}
+
+function scoreSentenceTranslationToEnglishWithRules(
+  question: StudyQuestion,
+  submittedAnswer: string,
+): RuleScoreResult {
+  const normalizedAnswer = normalizeAnswer(submittedAnswer);
+  const accepted = Array.from(
+    new Set([question.correctAnswer, ...question.acceptedAnswers].map(normalizeAnswer)),
+  );
+
+  if (!normalizedAnswer) {
+    return buildIncorrectResult(
+      question,
+      normalizedAnswer,
+      false,
+      "未入力です。文全体の意味が自然に伝わる英語で入力してみましょう。",
+      ["blank_answer"],
+    );
+  }
+
+  if (accepted.includes(normalizedAnswer)) {
+    return {
+      isCorrect: true,
+      score: 1,
+      judgment: "correct",
+      correctAnswer: question.correctAnswer,
+      feedbackJa: "正解です。自然な英訳として問題ありません。",
+      errorTags: [],
+      normalizedAnswer,
+      shouldEscalate: false,
+      source: "rule",
+    };
+  }
+
+  return buildIncorrectResult(
+    question,
+    normalizedAnswer,
+    true,
+    "英訳は表現の幅があるため、文全体の意味と熟語の使い方が自然かを追加で判定します。",
+    normalizedAnswer.split(" ").length <= 2
+      ? ["english_sentence_too_short", "needs_semantic_check"]
+      : ["needs_semantic_check"],
   );
 }

@@ -82,6 +82,10 @@ function answerPlaceholder(question: StudyQuestion) {
     return "例: 会議は金曜まで延期されました";
   }
 
+  if (question.questionType === "sentence_ja_to_en") {
+    return "例: We decided to put off the meeting until Friday.";
+  }
+
   return "例: 延期する";
 }
 
@@ -263,7 +267,11 @@ export function LearnSession({
                 value={answer}
                 onChange={(event) => setAnswer(event.target.value)}
               />
-              {question.questionType !== "ja_to_idiom" ? (
+              {question.questionType === "sentence_ja_to_en" ? (
+                <p className="text-sm text-slate-500">
+                  スマホでは英語キーボードのマイクから音声入力も使えます。
+                </p>
+              ) : question.questionType !== "ja_to_idiom" ? (
                 <p className="text-sm text-slate-500">
                   スマホではキーボードのマイクから音声入力も使えます。
                 </p>

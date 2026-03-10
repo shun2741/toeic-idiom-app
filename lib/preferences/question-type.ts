@@ -1,7 +1,12 @@
 import type { QuestionType } from "@/lib/types";
 
 export const QUESTION_TYPE_COOKIE = "tic_question_type";
-export const QUESTION_TYPES: QuestionType[] = ["ja_to_idiom", "idiom_to_ja", "sentence_to_ja"];
+export const QUESTION_TYPES: QuestionType[] = [
+  "ja_to_idiom",
+  "idiom_to_ja",
+  "sentence_to_ja",
+  "sentence_ja_to_en",
+];
 
 export function normalizeQuestionType(input: string | undefined | null): QuestionType {
   return QUESTION_TYPES.includes(input as QuestionType)
@@ -23,6 +28,10 @@ export function labelQuestionType(questionType: QuestionType) {
 
   if (questionType === "sentence_to_ja") {
     return "例文和訳";
+  }
+
+  if (questionType === "sentence_ja_to_en") {
+    return "例文英訳";
   }
 
   return "和訳入力";

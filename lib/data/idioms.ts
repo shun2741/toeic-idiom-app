@@ -385,6 +385,29 @@ export const QUESTION_BANK: StudyQuestion[] = [
       };
     },
   ),
+  ...IDIOM_BANK.map(
+    (idiom): StudyQuestion => {
+      const support = getSupport(idiom);
+
+      return {
+        questionId: `q-${idiom.id}-sentence-en`,
+        idiomId: idiom.id,
+        prompt: support.exampleJa,
+        promptLabel: "日本語の例文",
+        promptDescription:
+          "文全体の意味が自然に伝わる英語で入力してください。対象の英熟語を使えるとより理想的です。",
+        correctAnswer: support.exampleEn,
+        acceptedAnswers: [support.exampleEn],
+        questionType: "sentence_ja_to_en",
+        sourceExpression: idiom.expression,
+        sourceMeaningJa: idiom.meaningJa,
+        explanationJa: idiom.explanationJa,
+        hintJa: `${idiom.hintJa} できるだけ ${idiom.expression} を使って英訳してみましょう。`,
+        ...support,
+        levelBand: idiom.levelBand,
+      };
+    },
+  ),
 ];
 
 export function getQuestionById(questionId: string) {
