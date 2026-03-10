@@ -318,41 +318,72 @@ function getSupport(idiom: IdiomSeed) {
 
 export const QUESTION_BANK: StudyQuestion[] = [
   ...IDIOM_BANK.map(
-    (idiom): StudyQuestion => ({
-      questionId: `q-${idiom.id}`,
-      idiomId: idiom.id,
-      prompt: idiom.meaningJa,
-      promptLabel: "日本語",
-      promptDescription: "対応する英熟語を、半角スペースを含めて入力してください。",
-      correctAnswer: idiom.expression,
-      acceptedAnswers: idiom.variants,
-      questionType: "ja_to_idiom",
-      sourceExpression: idiom.expression,
-      sourceMeaningJa: idiom.meaningJa,
-      explanationJa: idiom.explanationJa,
-      hintJa: idiom.hintJa,
-      ...getSupport(idiom),
-      levelBand: idiom.levelBand,
-    }),
+    (idiom): StudyQuestion => {
+      const support = getSupport(idiom);
+
+      return {
+        questionId: `q-${idiom.id}`,
+        idiomId: idiom.id,
+        prompt: idiom.meaningJa,
+        promptLabel: "日本語",
+        promptDescription: "対応する英熟語を、半角スペースを含めて入力してください。",
+        correctAnswer: idiom.expression,
+        acceptedAnswers: idiom.variants,
+        questionType: "ja_to_idiom",
+        sourceExpression: idiom.expression,
+        sourceMeaningJa: idiom.meaningJa,
+        explanationJa: idiom.explanationJa,
+        hintJa: idiom.hintJa,
+        ...support,
+        levelBand: idiom.levelBand,
+      };
+    },
   ),
   ...IDIOM_BANK.map(
-    (idiom): StudyQuestion => ({
-      questionId: `q-${idiom.id}-ja`,
-      idiomId: idiom.id,
-      prompt: idiom.expression,
-      promptLabel: "英熟語",
-      promptDescription:
-        "意味が自然に伝わる日本語で入力してください。表現が多少違っても、意味が合っていれば正解になることがあります。",
-      correctAnswer: idiom.meaningJa,
-      acceptedAnswers: [idiom.meaningJa, ...(idiom.translationVariantsJa ?? [])],
-      questionType: "idiom_to_ja",
-      sourceExpression: idiom.expression,
-      sourceMeaningJa: idiom.meaningJa,
-      explanationJa: idiom.explanationJa,
-      hintJa: `${idiom.hintJa} 和訳は言い換えでも意味が合えば評価対象です。`,
-      ...getSupport(idiom),
-      levelBand: idiom.levelBand,
-    }),
+    (idiom): StudyQuestion => {
+      const support = getSupport(idiom);
+
+      return {
+        questionId: `q-${idiom.id}-ja`,
+        idiomId: idiom.id,
+        prompt: idiom.expression,
+        promptLabel: "英熟語",
+        promptDescription:
+          "意味が自然に伝わる日本語で入力してください。表現が多少違っても、意味が合っていれば正解になることがあります。",
+        correctAnswer: idiom.meaningJa,
+        acceptedAnswers: [idiom.meaningJa, ...(idiom.translationVariantsJa ?? [])],
+        questionType: "idiom_to_ja",
+        sourceExpression: idiom.expression,
+        sourceMeaningJa: idiom.meaningJa,
+        explanationJa: idiom.explanationJa,
+        hintJa: `${idiom.hintJa} 和訳は言い換えでも意味が合えば評価対象です。`,
+        ...support,
+        levelBand: idiom.levelBand,
+      };
+    },
+  ),
+  ...IDIOM_BANK.map(
+    (idiom): StudyQuestion => {
+      const support = getSupport(idiom);
+
+      return {
+        questionId: `q-${idiom.id}-sentence-ja`,
+        idiomId: idiom.id,
+        prompt: support.exampleEn,
+        promptLabel: "英文",
+        promptDescription:
+          "英文全体の意味が自然に伝わる日本語で入力してください。スマホではキーボードの音声入力も使えます。",
+        correctAnswer: support.exampleJa,
+        acceptedAnswers: [support.exampleJa],
+        questionType: "sentence_to_ja",
+        sourceExpression: idiom.expression,
+        sourceMeaningJa: idiom.meaningJa,
+        explanationJa: idiom.explanationJa,
+        hintJa: `${idiom.hintJa} 熟語だけでなく、文全体の流れが自然に伝わる和訳を目指しましょう。`,
+        ...support,
+        levelBand: idiom.levelBand,
+      };
+    },
   ),
 ];
 

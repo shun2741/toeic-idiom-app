@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { labelQuestionType } from "@/lib/preferences/question-type";
 import { DONT_KNOW_SENTINEL } from "@/lib/scoring/dont-know";
 import type { AnswerMode, Judgment, ScoreResult, StudyQuestion } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
@@ -70,6 +71,18 @@ function resultEffectClassName(judgment: Judgment) {
   if (judgment === "correct") return "result-glow-correct";
   if (judgment === "almost_correct") return "result-glow-almost";
   return "result-glow-incorrect";
+}
+
+function answerPlaceholder(question: StudyQuestion) {
+  if (question.questionType === "ja_to_idiom") {
+    return "例: put off";
+  }
+
+  if (question.questionType === "sentence_to_ja") {
+    return "例: 会議は金曜まで延期されました";
+  }
+
+  return "例: 延期する";
 }
 
 function achievementCopy({
@@ -213,7 +226,7 @@ export function LearnSession({
               <p className="text-sm font-medium text-slate-500">
                 {[
                   mode === "learn" ? "通常学習" : "復習",
-                  question.questionType === "ja_to_idiom" ? "英熟語入力" : "和訳入力",
+                  labelQuestionType(question.questionType),
                   `TOEIC ${question.levelBand}`,
                   typeof dueCount === "number" ? `復習対象 ${dueCount} 問` : null,
                 ]
@@ -246,10 +259,15 @@ export function LearnSession({
                 className="h-14 text-base sm:text-lg"
                 disabled={Boolean(result)}
                 maxLength={120}
-                placeholder={question.questionType === "ja_to_idiom" ? "例: put off" : "例: 延期する"}
+                placeholder={answerPlaceholder(question)}
                 value={answer}
                 onChange={(event) => setAnswer(event.target.value)}
               />
+              {question.questionType !== "ja_to_idiom" ? (
+                <p className="text-sm text-slate-500">
+                  スマホではキーボードのマイクから音声入力も使えます。
+                </p>
+              ) : null}
               <div className="grid gap-3 sm:flex sm:flex-wrap">
                 <Button className="w-full sm:w-auto" disabled={!answer.trim() || isSubmitting || Boolean(result)} size="lg" type="submit">
                   {isSubmitting ? (

@@ -1,7 +1,7 @@
 import type { QuestionType } from "@/lib/types";
 
 export const QUESTION_TYPE_COOKIE = "tic_question_type";
-export const QUESTION_TYPES: QuestionType[] = ["ja_to_idiom", "idiom_to_ja"];
+export const QUESTION_TYPES: QuestionType[] = ["ja_to_idiom", "idiom_to_ja", "sentence_to_ja"];
 
 export function normalizeQuestionType(input: string | undefined | null): QuestionType {
   return QUESTION_TYPES.includes(input as QuestionType)
@@ -17,5 +17,13 @@ export function getQuestionTypeFromCookies(cookieStore: {
 }
 
 export function labelQuestionType(questionType: QuestionType) {
-  return questionType === "ja_to_idiom" ? "英熟語入力" : "和訳入力";
+  if (questionType === "ja_to_idiom") {
+    return "英熟語入力";
+  }
+
+  if (questionType === "sentence_to_ja") {
+    return "例文和訳";
+  }
+
+  return "和訳入力";
 }

@@ -72,6 +72,10 @@ export function scoreWithRules(
     };
   }
 
+  if (question.questionType === "sentence_to_ja") {
+    return scoreSentenceTranslationWithRules(question, submittedAnswer);
+  }
+
   if (question.questionType === "idiom_to_ja") {
     return scoreJapaneseTranslationWithRules(question, submittedAnswer);
   }
@@ -260,5 +264,63 @@ function scoreJapaneseTranslationWithRules(
     true,
     "和訳は表現の幅があるため、意味が合っているかを追加で判定します。",
     ["needs_semantic_check"],
+  );
+}
+
+function scoreSentenceTranslationWithRules(
+  question: StudyQuestion,
+  submittedAnswer: string,
+): RuleScoreResult {
+  const normalizedAnswer = normalizeJapaneseAnswer(submittedAnswer);
+  const accepted = Array.from(
+    new Set([question.correctAnswer, ...question.acceptedAnswers].map(normalizeJapaneseAnswer)),
+  );
+
+  if (!normalizedAnswer) {
+    return buildIncorrectResult(
+      question,
+      normalizedAnswer,
+      false,
+      "未入力です。英文全体の意味が自然に伝わる日本語で入力してみましょう。",
+      ["blank_answer"],
+    );
+  }
+
+  if (accepted.includes(normalizedAnswer)) {
+    return {
+      isCorrect: true,
+      score: 1,
+      judgment: "correct",
+      correctAnswer: question.correctAnswer,
+      feedbackJa: "正解です。文全体の意味が自然に伝わっています。",
+      errorTags: [],
+      normalizedAnswer,
+      shouldEscalate: false,
+      source: "rule",
+    };
+  }
+
+  if (normalizedAnswer.length <= 4) {
+    return buildIncorrectResult(
+      question,
+      normalizedAnswer,
+      false,
+      "短すぎるため、英文全体の和訳としては判定できません。文全体の意味が伝わる形で答えてみましょう。",
+      ["too_short"],
+    );
+  }
+
+  const normalizedMeaning = normalizeJapaneseAnswer(question.sourceMeaningJa);
+  const includesCoreMeaning =
+    normalizedAnswer.includes(normalizedMeaning) || normalizedMeaning.includes(normalizedAnswer);
+
+  return buildIncorrectResult(
+    question,
+    normalizedAnswer,
+    true,
+    includesCoreMeaning
+      ? "熟語の意味は近そうです。文全体の和訳として自然かを追加で判定します。"
+      : "英文の和訳は表現の幅があるため、文全体の意味が合っているかを追加で判定します。",
+    [includesCoreMeaning ? "sentence_core_meaning_detected" : "needs_semantic_check"],
   );
 }

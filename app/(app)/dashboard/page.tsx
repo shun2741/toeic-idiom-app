@@ -163,7 +163,7 @@ export default async function DashboardPage() {
                         {answer.question?.correctAnswer ?? "-"}
                       </p>
                       <p className="mt-1 text-xs text-slate-400">
-                        {answer.question?.questionType === "idiom_to_ja" ? "和訳入力" : "英熟語入力"}
+                        {answer.question ? labelQuestionType(answer.question.questionType) : "-"}
                       </p>
                     </div>
                     <Badge

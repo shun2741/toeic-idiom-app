@@ -71,7 +71,7 @@ export default async function LearnPage() {
                   selectedMode={selectedAnswerMode}
                 />
                 <QuestionTypeForm
-                  description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
+                  description="英熟語入力、単体の和訳、例文ごとの和訳を切り替えられます。"
                   selectedType={selectedQuestionType}
                 />
                 <LevelFilterForm
@@ -113,7 +113,7 @@ export default async function LearnPage() {
               selectedMode={selectedAnswerMode}
             />
             <QuestionTypeForm
-              description="英熟語を答える練習と、和訳を答える練習を切り替えられます。"
+              description="英熟語入力、単体の和訳、例文ごとの和訳を切り替えられます。"
               selectedType={selectedQuestionType}
             />
             <LevelFilterForm
