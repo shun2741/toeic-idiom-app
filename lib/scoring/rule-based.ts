@@ -233,37 +233,12 @@ function scoreJapaneseTranslationWithRules(
     };
   }
 
-  const containsMeaning = accepted.some(
-    (candidate) =>
-      candidate.includes(normalizedAnswer) || normalizedAnswer.includes(candidate),
-  );
-
-  if (containsMeaning) {
-    return buildIncorrectResult(
-      question,
-      normalizedAnswer,
-      true,
-      "意味は近そうです。表現の自然さも含めて追加で判定します。",
-      ["needs_semantic_check"],
-    );
-  }
-
-  if (normalizedAnswer.length <= 2) {
-    return buildIncorrectResult(
-      question,
-      normalizedAnswer,
-      false,
-      `不正解です。正答例は「${question.correctAnswer}」です。`,
-      ["too_short"],
-    );
-  }
-
   return buildIncorrectResult(
     question,
     normalizedAnswer,
     true,
-    "和訳は表現の幅があるため、意味が合っているかを追加で判定します。",
-    ["needs_semantic_check"],
+    "和訳は言い換えの幅があるため、ニュアンスが同じかを追加で判定します。",
+    normalizedAnswer.length <= 2 ? ["translation_too_short", "needs_semantic_check"] : ["needs_semantic_check"],
   );
 }
 
@@ -300,27 +275,11 @@ function scoreSentenceTranslationWithRules(
     };
   }
 
-  if (normalizedAnswer.length <= 4) {
-    return buildIncorrectResult(
-      question,
-      normalizedAnswer,
-      false,
-      "短すぎるため、英文全体の和訳としては判定できません。文全体の意味が伝わる形で答えてみましょう。",
-      ["too_short"],
-    );
-  }
-
-  const normalizedMeaning = normalizeJapaneseAnswer(question.sourceMeaningJa);
-  const includesCoreMeaning =
-    normalizedAnswer.includes(normalizedMeaning) || normalizedMeaning.includes(normalizedAnswer);
-
   return buildIncorrectResult(
     question,
     normalizedAnswer,
     true,
-    includesCoreMeaning
-      ? "熟語の意味は近そうです。文全体の和訳として自然かを追加で判定します。"
-      : "英文の和訳は表現の幅があるため、文全体の意味が合っているかを追加で判定します。",
-    [includesCoreMeaning ? "sentence_core_meaning_detected" : "needs_semantic_check"],
+    "英文の和訳は表現の幅があるため、文全体の意味が保たれているかを追加で判定します。",
+    normalizedAnswer.length <= 4 ? ["sentence_translation_too_short", "needs_semantic_check"] : ["needs_semantic_check"],
   );
 }
