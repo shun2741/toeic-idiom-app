@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   ArrowRight,
   Bookmark,
@@ -151,6 +151,12 @@ export function LearnSession({
   const [isMoving, startMoving] = useTransition();
   const [isTogglingCheck, startTogglingCheck] = useTransition();
 
+  useEffect(() => {
+    setAnswer("");
+    setChecked(isChecked);
+    setResult(null);
+  }, [question.questionId, isChecked]);
+
   async function submitAnswer(submittedAnswer: string) {
     if (!submittedAnswer.trim() || isSubmitting) {
       return;
@@ -188,9 +194,6 @@ export function LearnSession({
 
   function handleNextQuestion() {
     startMoving(() => {
-      setAnswer("");
-      setResult(null);
-      setChecked(isChecked);
       router.replace(`${pathname}?refresh=${Date.now()}`, { scroll: false });
       router.refresh();
     });
@@ -217,7 +220,6 @@ export function LearnSession({
       }
 
       setChecked(nextChecked);
-      router.refresh();
     });
   }
 
