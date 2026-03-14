@@ -1,3 +1,4 @@
+import { ADDITIONAL_IDIOMS_20260314_BATCH2 } from "@/lib/data/idiom-expansion-20260314-batch2";
 import { ADDITIONAL_IDIOMS_20260314 } from "@/lib/data/idiom-expansion-20260314";
 import { IDIOM_SUPPORT } from "@/lib/data/idiom-support";
 import type { IdiomSeed, StudyQuestion } from "@/lib/types";
@@ -301,6 +302,7 @@ export const IDIOM_BANK: IdiomSeed[] = [
     levelBand: "730",
   },
   ...ADDITIONAL_IDIOMS_20260314,
+  ...ADDITIONAL_IDIOMS_20260314_BATCH2,
 ];
 
 function getSupport(idiom: IdiomSeed) {
