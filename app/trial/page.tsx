@@ -7,6 +7,7 @@ import { LearnSession } from "@/components/learn/learn-session";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
+import { QuestionOrderForm } from "@/components/preferences/question-order-form";
 import { SettingsSummary } from "@/components/preferences/settings-summary";
 import { QuestionTypeForm } from "@/components/preferences/question-type-form";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,10 @@ import { QUESTION_BANK } from "@/lib/data/idioms";
 import { selectGuestLearnQuestion } from "@/lib/data/repository";
 import { getAnswerModeFromCookies, labelAnswerMode } from "@/lib/preferences/answer-mode";
 import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
+import {
+  getQuestionOrderModeFromCookies,
+  labelQuestionOrderMode,
+} from "@/lib/preferences/question-order";
 import { getQuestionTypeFromCookies, labelQuestionType } from "@/lib/preferences/question-type";
 import { GUEST_VERIFIED_COOKIE, isGuestVerifiedToken } from "@/lib/security/guest-captcha";
 
@@ -24,24 +29,30 @@ export const dynamic = "force-dynamic";
 export default async function TrialPage({
   searchParams,
 }: {
-  searchParams: Promise<{ refresh?: string | string[] | undefined }>;
+  searchParams: Promise<{ cursor?: string | string[] | undefined; refresh?: string | string[] | undefined }>;
 }) {
   const cookieStore = await cookies();
   const params = await searchParams;
-  const refresh =
-    typeof params.refresh === "string"
-      ? params.refresh
-      : Array.isArray(params.refresh)
-        ? params.refresh[0]
-        : undefined;
+  const cursor =
+    typeof params.cursor === "string"
+      ? params.cursor
+      : Array.isArray(params.cursor)
+        ? params.cursor[0]
+        : typeof params.refresh === "string"
+          ? params.refresh
+          : Array.isArray(params.refresh)
+            ? params.refresh[0]
+            : undefined;
   const selectedBands = getLevelBandsFromCookies(cookieStore);
   const selectedQuestionType = getQuestionTypeFromCookies(cookieStore, "idiom_to_ja");
   const selectedAnswerMode = getAnswerModeFromCookies(cookieStore, "multiple_choice");
+  const selectedQuestionOrderMode = getQuestionOrderModeFromCookies(cookieStore);
   const isGuestVerified = isGuestVerifiedToken(cookieStore.get(GUEST_VERIFIED_COOKIE)?.value);
   const learnSelection = selectGuestLearnQuestion(
     selectedBands,
     selectedQuestionType,
-    refresh,
+    selectedQuestionOrderMode,
+    cursor,
   );
   const { question, poolCount, choiceOptions, isChecked } = learnSelection;
 
@@ -80,6 +91,7 @@ export default async function TrialPage({
                 items={[
                   { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
                   { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
+                  { label: "出題モード", value: labelQuestionOrderMode(selectedQuestionOrderMode) },
                   { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
                   { label: "モード", value: "ログインなし体験" },
                 ]}
@@ -94,11 +106,15 @@ export default async function TrialPage({
                     description="英熟語入力、単体の和訳、例文の和訳、例文の英訳を切り替えられます。"
                     selectedType={selectedQuestionType}
                   />
+                  <QuestionOrderForm
+                    description="体験版では順番どおりとランダムが特に分かりやすく使えます。未着手優先と苦手優先はログイン後により正確に働きます。"
+                    selectedMode={selectedQuestionOrderMode}
+                  />
                   <LevelFilterForm
                     description="体験モードでは選択したレベル帯だけを出題します。"
                     selectedBands={selectedBands}
                   />
-                  <Card className="border-border bg-slate-50">
+                  <Card className="border-border bg-slate-50 md:col-span-2">
                     <CardHeader>
                       <CardTitle className="text-lg">体験モードでできること</CardTitle>
                     </CardHeader>
@@ -131,6 +147,7 @@ export default async function TrialPage({
                 items={[
                   { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
                   { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
+                  { label: "出題モード", value: labelQuestionOrderMode(selectedQuestionOrderMode) },
                   { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
                   { label: "モード", value: "ログインなし体験" },
                 ]}
@@ -145,11 +162,15 @@ export default async function TrialPage({
                     description="英熟語入力、単体の和訳、例文の和訳、例文の英訳を切り替えられます。"
                     selectedType={selectedQuestionType}
                   />
+                  <QuestionOrderForm
+                    description="体験版では順番どおりとランダムが特に分かりやすく使えます。未着手優先と苦手優先はログイン後により正確に働きます。"
+                    selectedMode={selectedQuestionOrderMode}
+                  />
                   <LevelFilterForm
                     description="体験モードでは選択したレベル帯だけを出題します。"
                     selectedBands={selectedBands}
                   />
-                  <Card className="border-border bg-slate-50">
+                  <Card className="border-border bg-slate-50 md:col-span-2">
                     <CardHeader>
                       <CardTitle className="text-lg">体験モードでできること</CardTitle>
                     </CardHeader>
@@ -180,6 +201,7 @@ export default async function TrialPage({
                 items={[
                   { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
                   { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
+                  { label: "出題モード", value: labelQuestionOrderMode(selectedQuestionOrderMode) },
                   { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
                   { label: "モード", value: "ログインなし体験" },
                 ]}
@@ -194,11 +216,15 @@ export default async function TrialPage({
                     description="英熟語入力、単体の和訳、例文の和訳、例文の英訳を切り替えられます。"
                     selectedType={selectedQuestionType}
                   />
+                  <QuestionOrderForm
+                    description="体験版では順番どおりとランダムが特に分かりやすく使えます。未着手優先と苦手優先はログイン後により正確に働きます。"
+                    selectedMode={selectedQuestionOrderMode}
+                  />
                   <LevelFilterForm
                     description="体験モードでは選択したレベル帯だけを出題します。"
                     selectedBands={selectedBands}
                   />
-                  <Card className="border-border bg-slate-50">
+                  <Card className="border-border bg-slate-50 md:col-span-2">
                     <CardHeader>
                       <CardTitle className="text-lg">体験モードでできること</CardTitle>
                     </CardHeader>

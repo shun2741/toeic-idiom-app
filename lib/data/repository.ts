@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { QUESTION_BANK, getQuestionById } from "@/lib/data/idioms";
 import type {
   LevelBand,
+  QuestionOrderMode,
   QuestionSourceMode,
   QuestionType,
 } from "@/lib/types";
@@ -37,6 +38,8 @@ export async function selectLearnQuestion(
   levelBands: LevelBand[],
   questionType: QuestionType,
   questionSourceMode: QuestionSourceMode,
+  questionOrderMode: QuestionOrderMode,
+  stepKey?: string,
 ) {
   const checkedIdiomIds = await getCheckedIdiomIds(supabase, userId);
   const filteredQuestionBank = getQuestionPool({
@@ -58,7 +61,7 @@ export async function selectLearnQuestion(
 
   const { data, error } = await supabase
     .from("user_answers")
-    .select("question_id, answered_at")
+    .select("question_id, answered_at, score, judgment")
     .eq("user_id", userId)
     .order("answered_at", { ascending: false })
     .limit(200);
@@ -67,42 +70,14 @@ export async function selectLearnQuestion(
     throw error;
   }
 
-  const history = (data ?? []) as Array<{ question_id: string; answered_at: string }>;
-  const counts = new Map<string, { count: number; latest: number }>();
-
-  for (const item of history) {
-    const current = counts.get(item.question_id);
-    const timestamp = new Date(item.answered_at).getTime();
-
-    if (current) {
-      current.count += 1;
-      current.latest = Math.max(current.latest, timestamp);
-    } else {
-      counts.set(item.question_id, { count: 1, latest: timestamp });
-    }
-  }
-
-  const unanswered = filteredQuestionBank.find((question) => !counts.has(question.questionId));
-  if (unanswered) {
-    return {
-      question: unanswered,
-      poolCount: filteredQuestionBank.length,
-      checkedIdiomsCount: checkedIdiomIds.length,
-      choiceOptions: buildChoiceOptions(unanswered, filteredQuestionBank),
-      isChecked: checkedIdiomIds.includes(unanswered.idiomId),
-    };
-  }
-
-  const question = [...filteredQuestionBank].sort((a, b) => {
-    const left = counts.get(a.questionId)!;
-    const right = counts.get(b.questionId)!;
-
-    if (left.count !== right.count) {
-      return left.count - right.count;
-    }
-
-    return left.latest - right.latest;
-  })[0];
+  const history = (data ?? []) as AnswerRow[];
+  const metrics = buildQuestionMetrics(history);
+  const question = pickLearnQuestion({
+    questionPool: filteredQuestionBank,
+    metrics,
+    questionOrderMode,
+    step: parseStepKey(stepKey),
+  });
 
   return {
     question,
@@ -116,7 +91,8 @@ export async function selectLearnQuestion(
 export function selectGuestLearnQuestion(
   levelBands: LevelBand[],
   questionType: QuestionType,
-  refreshKey?: string,
+  questionOrderMode: QuestionOrderMode,
+  stepKey?: string,
 ) {
   const filteredQuestionBank = getQuestionPool({
     levelBands,
@@ -135,10 +111,12 @@ export function selectGuestLearnQuestion(
     };
   }
 
-  const seedSource =
-    refreshKey?.trim() ||
-    `${questionType}-${levelBands.join(",")}-${new Date().toISOString().slice(0, 13)}`;
-  const question = filteredQuestionBank[hashString(seedSource) % filteredQuestionBank.length];
+  const question = pickGuestQuestion({
+    questionPool: filteredQuestionBank,
+    questionOrderMode,
+    step: parseStepKey(stepKey),
+    seedBase: `${questionType}-${levelBands.join(",")}`,
+  });
 
   return {
     question,
@@ -391,6 +369,180 @@ function getQuestionPool({
 
     return true;
   });
+}
+
+type QuestionMetrics = {
+  count: number;
+  latest: number;
+  weakScore: number;
+};
+
+function buildQuestionMetrics(history: AnswerRow[]) {
+  const grouped = new Map<string, AnswerRow[]>();
+
+  for (const item of history) {
+    const current = grouped.get(item.question_id);
+
+    if (current) {
+      current.push(item);
+    } else {
+      grouped.set(item.question_id, [item]);
+    }
+  }
+
+  const metrics = new Map<string, QuestionMetrics>();
+
+  for (const [questionId, rows] of grouped.entries()) {
+    const latest = rows.reduce(
+      (max, row) => Math.max(max, new Date(row.answered_at).getTime()),
+      0,
+    );
+    let correctCount = 0;
+    let incorrectCount = 0;
+    let almostCount = 0;
+    let consecutiveMisses = 0;
+
+    for (const row of rows) {
+      if (row.judgment === "correct") {
+        correctCount += 1;
+      } else if (row.judgment === "almost_correct") {
+        almostCount += 1;
+      } else {
+        incorrectCount += 1;
+      }
+    }
+
+    for (const row of rows) {
+      if (row.judgment === "correct") {
+        break;
+      }
+
+      consecutiveMisses += 1;
+    }
+
+    const lastJudgment = rows[0]?.judgment;
+    const weakScore =
+      incorrectCount * 4 +
+      almostCount * 2 +
+      consecutiveMisses * 5 +
+      (lastJudgment === "incorrect" ? 3 : 0) +
+      (lastJudgment === "almost_correct" ? 1 : 0) -
+      correctCount;
+
+    metrics.set(questionId, {
+      count: rows.length,
+      latest,
+      weakScore,
+    });
+  }
+
+  return metrics;
+}
+
+function parseStepKey(stepKey?: string) {
+  const parsed = Number.parseInt(stepKey ?? "0", 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+function pickLearnQuestion({
+  questionPool,
+  metrics,
+  questionOrderMode,
+  step,
+}: {
+  questionPool: StudyQuestion[];
+  metrics: Map<string, QuestionMetrics>;
+  questionOrderMode: QuestionOrderMode;
+  step: number;
+}) {
+  if (questionOrderMode === "random") {
+    return pickRandomQuestion(questionPool, `learn-${step}`);
+  }
+
+  if (questionOrderMode === "unanswered_first") {
+    const unanswered = questionPool.filter((question) => !metrics.has(question.questionId));
+
+    if (unanswered.length > 0) {
+      return unanswered[step % unanswered.length];
+    }
+
+    return pickLeastPracticedQuestion(questionPool, metrics);
+  }
+
+  if (questionOrderMode === "weak_first") {
+    const weakQuestions = [...questionPool]
+      .filter((question) => (metrics.get(question.questionId)?.weakScore ?? 0) > 0)
+      .sort((a, b) => {
+        const left = metrics.get(a.questionId)!;
+        const right = metrics.get(b.questionId)!;
+
+        if (left.weakScore !== right.weakScore) {
+          return right.weakScore - left.weakScore;
+        }
+
+        return left.latest - right.latest;
+      });
+
+    if (weakQuestions.length > 0) {
+      return weakQuestions[step % weakQuestions.length];
+    }
+
+    const unanswered = questionPool.filter((question) => !metrics.has(question.questionId));
+    if (unanswered.length > 0) {
+      return unanswered[step % unanswered.length];
+    }
+
+    return pickLeastPracticedQuestion(questionPool, metrics);
+  }
+
+  return questionPool[step % questionPool.length];
+}
+
+function pickGuestQuestion({
+  questionPool,
+  questionOrderMode,
+  step,
+  seedBase,
+}: {
+  questionPool: StudyQuestion[];
+  questionOrderMode: QuestionOrderMode;
+  step: number;
+  seedBase: string;
+}) {
+  if (questionOrderMode === "random") {
+    return pickRandomQuestion(questionPool, `${seedBase}-${step}`);
+  }
+
+  return questionPool[step % questionPool.length];
+}
+
+function pickLeastPracticedQuestion(
+  questionPool: StudyQuestion[],
+  metrics: Map<string, QuestionMetrics>,
+) {
+  return [...questionPool].sort((a, b) => {
+    const left = metrics.get(a.questionId) ?? { count: 0, latest: 0, weakScore: 0 };
+    const right = metrics.get(b.questionId) ?? { count: 0, latest: 0, weakScore: 0 };
+
+    if (left.count !== right.count) {
+      return left.count - right.count;
+    }
+
+    return left.latest - right.latest;
+  })[0];
+}
+
+function pickRandomQuestion(questionPool: StudyQuestion[], seed: string) {
+  if (questionPool.length === 1) {
+    return questionPool[0];
+  }
+
+  const currentIndex = hashString(seed) % questionPool.length;
+  const previousIndex = hashString(`${seed}-previous`) % questionPool.length;
+  const index =
+    currentIndex === previousIndex ? (currentIndex + 1) % questionPool.length : currentIndex;
+
+  return questionPool[index];
 }
 
 function hashString(input: string) {

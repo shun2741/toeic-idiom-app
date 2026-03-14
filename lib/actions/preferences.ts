@@ -15,6 +15,10 @@ import {
   normalizeQuestionSourceMode,
   QUESTION_SOURCE_COOKIE,
 } from "@/lib/preferences/question-source";
+import {
+  normalizeQuestionOrderMode,
+  QUESTION_ORDER_COOKIE,
+} from "@/lib/preferences/question-order";
 
 export async function saveLevelBandsAction(formData: FormData) {
   const cookieStore = await cookies();
@@ -96,6 +100,26 @@ export async function saveQuestionSourceModeAction(formData: FormData) {
   );
 
   cookieStore.set(QUESTION_SOURCE_COOKIE, questionSourceMode, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 180,
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/learn");
+  revalidatePath("/trial");
+  revalidatePath("/");
+}
+
+export async function saveQuestionOrderModeAction(formData: FormData) {
+  const cookieStore = await cookies();
+  const questionOrderMode = normalizeQuestionOrderMode(
+    String(formData.get("questionOrderMode") ?? ""),
+  );
+
+  cookieStore.set(QUESTION_ORDER_COOKIE, questionOrderMode, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

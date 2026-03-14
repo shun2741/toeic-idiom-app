@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LearnSession } from "@/components/learn/learn-session";
 import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
+import { QuestionOrderForm } from "@/components/preferences/question-order-form";
 import { QuestionSourceForm } from "@/components/preferences/question-source-form";
 import { QuestionTypeForm } from "@/components/preferences/question-type-form";
 import { SettingsSummary } from "@/components/preferences/settings-summary";
@@ -13,18 +14,34 @@ import { getDashboardStats, selectLearnQuestion } from "@/lib/data/repository";
 import { getAnswerModeFromCookies, labelAnswerMode } from "@/lib/preferences/answer-mode";
 import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
 import {
+  getQuestionOrderModeFromCookies,
+  labelQuestionOrderMode,
+} from "@/lib/preferences/question-order";
+import {
   getQuestionSourceModeFromCookies,
   labelQuestionSourceMode,
 } from "@/lib/preferences/question-source";
 import { getQuestionTypeFromCookies, labelQuestionType } from "@/lib/preferences/question-type";
 import { requireUser } from "@/lib/supabase/auth";
 
-export default async function LearnPage() {
+export default async function LearnPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ cursor?: string | string[] | undefined }>;
+}) {
   const cookieStore = await cookies();
+  const params = searchParams ? await searchParams : undefined;
+  const cursor =
+    typeof params?.cursor === "string"
+      ? params.cursor
+      : Array.isArray(params?.cursor)
+        ? params.cursor[0]
+        : undefined;
   const selectedBands = getLevelBandsFromCookies(cookieStore);
   const selectedQuestionType = getQuestionTypeFromCookies(cookieStore);
   const selectedAnswerMode = getAnswerModeFromCookies(cookieStore);
   const selectedQuestionSourceMode = getQuestionSourceModeFromCookies(cookieStore);
+  const selectedQuestionOrderMode = getQuestionOrderModeFromCookies(cookieStore);
   const { user, supabase } = await requireUser();
   const [learnSelection, stats] = await Promise.all([
     selectLearnQuestion(
@@ -33,6 +50,8 @@ export default async function LearnPage() {
       selectedBands,
       selectedQuestionType,
       selectedQuestionSourceMode,
+      selectedQuestionOrderMode,
+      cursor,
     ),
     getDashboardStats(supabase, user.id),
   ]);
@@ -56,6 +75,7 @@ export default async function LearnPage() {
                 { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
                 { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
                 { label: "出題対象", value: labelQuestionSourceMode(selectedQuestionSourceMode) },
+                { label: "出題モード", value: labelQuestionOrderMode(selectedQuestionOrderMode) },
                 { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
               ]}
               title="現在の学習設定"
@@ -73,6 +93,10 @@ export default async function LearnPage() {
                 <QuestionTypeForm
                   description="英熟語入力、単体の和訳、例文の和訳、例文の英訳を切り替えられます。"
                   selectedType={selectedQuestionType}
+                />
+                <QuestionOrderForm
+                  description="順番どおり、ランダム、未着手優先、苦手優先から選べます。"
+                  selectedMode={selectedQuestionOrderMode}
                 />
                 <LevelFilterForm
                   description="通常学習だけに反映されます。復習は期限が来た問題を優先します。"
@@ -98,6 +122,7 @@ export default async function LearnPage() {
             { label: "出題形式", value: labelQuestionType(selectedQuestionType) },
             { label: "回答形式", value: labelAnswerMode(selectedAnswerMode) },
             { label: "出題対象", value: labelQuestionSourceMode(selectedQuestionSourceMode) },
+            { label: "出題モード", value: labelQuestionOrderMode(selectedQuestionOrderMode) },
             { label: "レベル", value: selectedBands.map(labelLevelBand).join(" / ") },
           ]}
           title="現在の学習設定"
@@ -115,6 +140,10 @@ export default async function LearnPage() {
             <QuestionTypeForm
               description="英熟語入力、単体の和訳、例文の和訳、例文の英訳を切り替えられます。"
               selectedType={selectedQuestionType}
+            />
+            <QuestionOrderForm
+              description="順番どおり、ランダム、未着手優先、苦手優先から選べます。"
+              selectedMode={selectedQuestionOrderMode}
             />
             <LevelFilterForm
               description="通常学習だけに反映されます。復習は期限が来た問題を優先します。"

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import {
   ArrowRight,
@@ -144,6 +144,7 @@ export function LearnSession({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [answer, setAnswer] = useState("");
   const [checked, setChecked] = useState(isChecked);
   const [result, setResult] = useState<ApiResponse | null>(null);
@@ -194,7 +195,12 @@ export function LearnSession({
 
   function handleNextQuestion() {
     startMoving(() => {
-      router.replace(`${pathname}?refresh=${Date.now()}`, { scroll: false });
+      const params = new URLSearchParams(searchParams.toString());
+      const currentCursor = Number.parseInt(params.get("cursor") ?? "0", 10);
+      const nextCursor = Number.isFinite(currentCursor) ? currentCursor + 1 : 1;
+      params.set("cursor", String(nextCursor));
+      params.delete("refresh");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
       router.refresh();
     });
   }

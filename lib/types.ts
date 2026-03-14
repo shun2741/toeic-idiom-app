@@ -7,6 +7,11 @@ export type QuestionType =
   | "sentence_ja_to_en";
 export type AnswerMode = "free_text" | "multiple_choice";
 export type QuestionSourceMode = "all" | "checked_only";
+export type QuestionOrderMode =
+  | "sequential"
+  | "random"
+  | "unanswered_first"
+  | "weak_first";
 
 export type IdiomSeed = {
   id: string;

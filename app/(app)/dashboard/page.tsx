@@ -4,6 +4,7 @@ import { ArrowRight, Clock3, Sparkles } from "lucide-react";
 
 import { AnswerModeForm } from "@/components/preferences/answer-mode-form";
 import { LevelFilterForm } from "@/components/preferences/level-filter-form";
+import { QuestionOrderForm } from "@/components/preferences/question-order-form";
 import { QuestionTypeForm } from "@/components/preferences/question-type-form";
 import { QuestionSourceForm } from "@/components/preferences/question-source-form";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
@@ -13,6 +14,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getLevelBandsFromCookies, labelLevelBand } from "@/lib/preferences/level-filter";
 import { getQuestionTypeFromCookies, labelQuestionType } from "@/lib/preferences/question-type";
 import { getAnswerModeFromCookies, labelAnswerMode } from "@/lib/preferences/answer-mode";
+import {
+  getQuestionOrderModeFromCookies,
+  labelQuestionOrderMode,
+} from "@/lib/preferences/question-order";
 import {
   getQuestionSourceModeFromCookies,
   labelQuestionSourceMode,
@@ -28,6 +33,7 @@ export default async function DashboardPage() {
   const selectedQuestionType = getQuestionTypeFromCookies(cookieStore);
   const selectedAnswerMode = getAnswerModeFromCookies(cookieStore);
   const selectedQuestionSourceMode = getQuestionSourceModeFromCookies(cookieStore);
+  const selectedQuestionOrderMode = getQuestionOrderModeFromCookies(cookieStore);
   const { user, supabase } = await requireUser();
   const [stats, recentAnswers, learnSelection] = await Promise.all([
     getDashboardStats(supabase, user.id),
@@ -38,6 +44,7 @@ export default async function DashboardPage() {
       selectedBands,
       selectedQuestionType,
       selectedQuestionSourceMode,
+      selectedQuestionOrderMode,
     ),
   ]);
 
@@ -120,7 +127,7 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>現在の出題設定</CardTitle>
             <CardDescription>
-              通常学習では {labelQuestionType(selectedQuestionType)} / {labelAnswerMode(selectedAnswerMode)} / {labelQuestionSourceMode(selectedQuestionSourceMode)} を使います。
+              通常学習では {labelQuestionType(selectedQuestionType)} / {labelAnswerMode(selectedAnswerMode)} / {labelQuestionSourceMode(selectedQuestionSourceMode)} / {labelQuestionOrderMode(selectedQuestionOrderMode)} を使います。
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
@@ -128,12 +135,14 @@ export default async function DashboardPage() {
               <p>全体: {stats.totalIdioms} 熟語 / {stats.totalQuestions} 問</p>
               <p>現在の出題母集団: {learnSelection.poolCount} 問</p>
               <p>チェック済み問題: {learnSelection.checkedIdiomsCount} 件</p>
+              <p>出題モード: {labelQuestionOrderMode(selectedQuestionOrderMode)}</p>
               <p>レベル: {selectedBands.map(labelLevelBand).join(" / ")}</p>
             </div>
             <QuestionSourceForm
               checkedCount={learnSelection.checkedIdiomsCount}
               selectedMode={selectedQuestionSourceMode}
             />
+            <QuestionOrderForm selectedMode={selectedQuestionOrderMode} />
             <AnswerModeForm selectedMode={selectedAnswerMode} />
             <QuestionTypeForm selectedType={selectedQuestionType} />
             <LevelFilterForm selectedBands={selectedBands} />
