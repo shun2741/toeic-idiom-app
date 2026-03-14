@@ -1,3 +1,5 @@
+import { ADDITIONAL_IDIOM_SUPPORT_20260314 } from "@/lib/data/idiom-expansion-20260314";
+
 export const IDIOM_SUPPORT: Record<
   string,
   {
@@ -205,4 +207,5 @@ export const IDIOM_SUPPORT: Record<
     collocationHintJa: "material, sample, flyer, document が典型です。",
     commonMistakeJa: "気絶する意味もありますが、TOEIC では配布する意味で見分けることが多いです。",
   },
+  ...ADDITIONAL_IDIOM_SUPPORT_20260314,
 };
