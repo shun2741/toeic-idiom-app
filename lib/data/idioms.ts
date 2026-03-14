@@ -1,3 +1,4 @@
+import { ADDITIONAL_IDIOMS_20260314_BATCH3 } from "@/lib/data/idiom-expansion-20260314-batch3";
 import { ADDITIONAL_IDIOMS_20260314_BATCH2 } from "@/lib/data/idiom-expansion-20260314-batch2";
 import { ADDITIONAL_IDIOMS_20260314 } from "@/lib/data/idiom-expansion-20260314";
 import { IDIOM_SUPPORT } from "@/lib/data/idiom-support";
@@ -303,6 +304,7 @@ export const IDIOM_BANK: IdiomSeed[] = [
   },
   ...ADDITIONAL_IDIOMS_20260314,
   ...ADDITIONAL_IDIOMS_20260314_BATCH2,
+  ...ADDITIONAL_IDIOMS_20260314_BATCH3,
 ];
 
 function getSupport(idiom: IdiomSeed) {

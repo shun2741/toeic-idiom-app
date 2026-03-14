@@ -1,3 +1,4 @@
+import { ADDITIONAL_IDIOM_SUPPORT_20260314_BATCH3 } from "@/lib/data/idiom-expansion-20260314-batch3";
 import { ADDITIONAL_IDIOM_SUPPORT_20260314_BATCH2 } from "@/lib/data/idiom-expansion-20260314-batch2";
 import { ADDITIONAL_IDIOM_SUPPORT_20260314 } from "@/lib/data/idiom-expansion-20260314";
 
@@ -210,4 +211,5 @@ export const IDIOM_SUPPORT: Record<
   },
   ...ADDITIONAL_IDIOM_SUPPORT_20260314,
   ...ADDITIONAL_IDIOM_SUPPORT_20260314_BATCH2,
+  ...ADDITIONAL_IDIOM_SUPPORT_20260314_BATCH3,
 };

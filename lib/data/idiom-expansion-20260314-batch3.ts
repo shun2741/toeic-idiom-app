@@ -1,0 +1,195 @@
+import type { IdiomSeed } from "@/lib/types";
+
+export const ADDITIONAL_IDIOMS_20260314_BATCH3: IdiomSeed[] = [
+  {
+    id: "put-forward",
+    expression: "put forward",
+    meaningJa: "提案する",
+    variants: ["put forward"],
+    explanationJa: "案や意見、候補者などを正式に出す時に使います。",
+    hintJa: "proposal や idea を前に出す感覚です。",
+    levelBand: "780",
+  },
+  {
+    id: "hold-off-on",
+    expression: "hold off on",
+    meaningJa: "見送る",
+    variants: ["hold off on"],
+    explanationJa: "決定や実施をしばらく延期して様子を見る時に使います。",
+    hintJa: "decision や purchase を一旦止める文脈で出やすいです。",
+    levelBand: "780",
+  },
+  {
+    id: "get-across",
+    expression: "get across",
+    meaningJa: "伝える",
+    variants: ["get across"],
+    explanationJa: "考えや要点を相手にうまく伝える時に使います。",
+    hintJa: "message や point を相手に届ける場面で自然です。",
+    levelBand: "730",
+  },
+  {
+    id: "phase-in",
+    expression: "phase in",
+    meaningJa: "段階的に導入する",
+    variants: ["phase in"],
+    explanationJa: "制度や仕組みを少しずつ取り入れる時に使います。",
+    hintJa: "new system や policy の導入で見かけます。",
+    levelBand: "860",
+  },
+  {
+    id: "opt-for",
+    expression: "opt for",
+    meaningJa: "選ぶ",
+    variants: ["opt for"],
+    explanationJa: "複数の選択肢の中から意識的に選ぶ時に使います。",
+    hintJa: "plan や option を選択する場面で頻出です。",
+    levelBand: "730",
+  },
+  {
+    id: "factor-in",
+    expression: "factor in",
+    meaningJa: "織り込む",
+    variants: ["factor in"],
+    explanationJa: "費用や条件、事情を計算や判断に含める時に使います。",
+    hintJa: "cost や risk を考慮に入れる感覚です。",
+    levelBand: "860",
+  },
+  {
+    id: "scale-up",
+    expression: "scale up",
+    meaningJa: "拡大する",
+    variants: ["scale up"],
+    explanationJa: "事業や生産量を大きくする時に使います。",
+    hintJa: "production や business を広げる文脈で出ます。",
+    levelBand: "780",
+  },
+  {
+    id: "smooth-out",
+    expression: "smooth out",
+    meaningJa: "解消する",
+    variants: ["smooth out"],
+    explanationJa: "問題やばらつきをならして安定させる時に使います。",
+    hintJa: "issue や difference をなめらかに整えるイメージです。",
+    levelBand: "860",
+  },
+  {
+    id: "check-over",
+    expression: "check over",
+    meaningJa: "点検する",
+    variants: ["check over"],
+    explanationJa: "書類や設備をざっと確認する時に使います。",
+    hintJa: "document や machine を確認する文脈で出ます。",
+    levelBand: "700",
+  },
+  {
+    id: "mark-down",
+    expression: "mark down",
+    meaningJa: "値下げする",
+    variants: ["mark down"],
+    explanationJa: "商品価格を引き下げる時に使います。",
+    hintJa: "price や item を安くする場面で自然です。",
+    levelBand: "730",
+  },
+  {
+    id: "single-out",
+    expression: "single out",
+    meaningJa: "特に取り上げる",
+    variants: ["single out"],
+    explanationJa: "多数の中から一つを選んで注目する時に使います。",
+    hintJa: "employee や issue を特定して挙げる場面で使えます。",
+    levelBand: "860",
+  },
+  {
+    id: "boil-down-to",
+    expression: "boil down to",
+    meaningJa: "要する",
+    variants: ["boil down to"],
+    explanationJa: "複雑な話を突き詰めると結局何か、を表す時に使います。",
+    hintJa: "choice や issue が結局何に帰着するかを表します。",
+    levelBand: "860",
+  },
+];
+
+export const ADDITIONAL_IDIOM_SUPPORT_20260314_BATCH3: Record<
+  string,
+  {
+    exampleEn: string;
+    exampleJa: string;
+    collocationHintJa: string;
+    commonMistakeJa: string;
+  }
+> = {
+  "put-forward": {
+    exampleEn: "She put forward a new pricing strategy at the meeting.",
+    exampleJa: "彼女は会議で新しい価格戦略を提案しました。",
+    collocationHintJa: "proposal, idea, strategy, candidate と相性が良いです。",
+    commonMistakeJa: "put up や put together と混同せず、前に出す forward を意識すると整理しやすいです。",
+  },
+  "hold-off-on": {
+    exampleEn: "We decided to hold off on hiring until next quarter.",
+    exampleJa: "私たちは次の四半期まで採用を見送ることにしました。",
+    collocationHintJa: "decision, hiring, purchase, launch が後ろに来やすいです。",
+    commonMistakeJa: "on まで含めて覚えないと、何を見送るのかが抜けやすいです。",
+  },
+  "get-across": {
+    exampleEn: "The presenter got the main point across clearly.",
+    exampleJa: "発表者は要点を明確に伝えました。",
+    collocationHintJa: "point, idea, message, concern を伝える文脈で自然です。",
+    commonMistakeJa: "across の語感は相手の側まで届くことなので、get over と混同しないようにします。",
+  },
+  "phase-in": {
+    exampleEn: "The company will phase in the new system over six months.",
+    exampleJa: "会社は6か月かけて新システムを段階的に導入します。",
+    collocationHintJa: "system, policy, change, process と結びつきやすいです。",
+    commonMistakeJa: "phase out の反対方向なので、in と out の取り違えに注意します。",
+  },
+  "opt-for": {
+    exampleEn: "Many clients opted for the annual plan.",
+    exampleJa: "多くの顧客が年額プランを選びました。",
+    collocationHintJa: "plan, option, service, method を選ぶ時によく使います。",
+    commonMistakeJa: "choose で置き換えられますが、for を落とすと形が崩れます。",
+  },
+  "factor-in": {
+    exampleEn: "Please factor in shipping costs when you prepare the quote.",
+    exampleJa: "見積もりを作る際は送料も織り込んでください。",
+    collocationHintJa: "cost, risk, time, tax を考慮に入れる文脈で出ます。",
+    commonMistakeJa: "in を抜かしやすいので、判断材料に入れる感覚までまとめて覚えます。",
+  },
+  "scale-up": {
+    exampleEn: "The startup is ready to scale up production next year.",
+    exampleJa: "そのスタートアップは来年、生産を拡大する準備ができています。",
+    collocationHintJa: "production, business, service, operation と相性が良いです。",
+    commonMistakeJa: "scale back と逆方向なので、up で拡大を明確にします。",
+  },
+  "smooth-out": {
+    exampleEn: "We need to smooth out the delivery issues before launch.",
+    exampleJa: "発売前に配送上の問題を解消する必要があります。",
+    collocationHintJa: "problem, issue, difference, process を整える時に使えます。",
+    commonMistakeJa: "smooth over と近いですが、まずは問題をならす smooth out を軸にすると覚えやすいです。",
+  },
+  "check-over": {
+    exampleEn: "Please check over the contract before signing it.",
+    exampleJa: "署名する前にその契約書を点検してください。",
+    collocationHintJa: "contract, document, machine, equipment を確認する時に自然です。",
+    commonMistakeJa: "check in や check out と混ざりやすいので、over の見渡す感覚を意識します。",
+  },
+  "mark-down": {
+    exampleEn: "The store marked down seasonal items by 30 percent.",
+    exampleJa: "その店は季節商品を30パーセント値下げしました。",
+    collocationHintJa: "price, item, product, goods が後ろに来やすいです。",
+    commonMistakeJa: "write down と混同しやすいですが、mark down は価格を下げる意味です。",
+  },
+  "single-out": {
+    exampleEn: "The report singled out customer support as a key strength.",
+    exampleJa: "その報告書は顧客対応を主要な強みとして特に取り上げました。",
+    collocationHintJa: "employee, issue, factor, department を特定して挙げる時に使います。",
+    commonMistakeJa: "single は一つ、out は外に出す感覚なので、特定して目立たせる意味で覚えると定着します。",
+  },
+  "boil-down-to": {
+    exampleEn: "The final decision boiled down to cost and timing.",
+    exampleJa: "最終判断は要するにコストと時期の問題でした。",
+    collocationHintJa: "decision, issue, question, choice が結局何かに帰着する場面で使います。",
+    commonMistakeJa: "to まで含めて一続きで覚えないと、帰着先が抜けて不自然になります。",
+  },
+};
