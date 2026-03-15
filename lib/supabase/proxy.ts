@@ -31,7 +31,9 @@ export function updateSession(request: NextRequest) {
     },
   );
 
-  void supabase.auth.getUser();
+  void supabase.auth.getUser().catch((error) => {
+    console.error("Failed to refresh Supabase session", error);
+  });
 
   return response;
 }

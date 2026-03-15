@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { getOptionalUser } from "@/lib/supabase/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasServerSupabaseEnv } from "@/lib/supabase/env";
 
@@ -14,10 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Supabase が未設定です。" }, { status: 500 });
   }
 
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, supabase } = await getOptionalUser();
 
   if (!user) {
     return NextResponse.json({ error: "ログインが必要です。" }, { status: 401 });

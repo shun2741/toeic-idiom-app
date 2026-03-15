@@ -8,6 +8,7 @@ import { getClientIp, hashIdentifier } from "@/lib/security/ip";
 import { consumeRateLimit, peekRateLimit } from "@/lib/security/rate-limit";
 import { gradeAnswer, gradeGuestAnswer } from "@/lib/scoring";
 import { normalizeAnswer } from "@/lib/scoring/normalize";
+import { getOptionalUser } from "@/lib/supabase/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasServerSupabaseEnv } from "@/lib/supabase/env";
 
@@ -154,10 +155,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, supabase } = await getOptionalUser();
 
     if (!user) {
       return NextResponse.json({ error: "ログインが必要です。" }, { status: 401 });

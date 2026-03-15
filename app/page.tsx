@@ -3,15 +3,12 @@ import { redirect } from "next/navigation";
 import { BetaBanner } from "@/components/layout/beta-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { LoginPanel } from "@/components/auth/login-panel";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getOptionalUser } from "@/lib/supabase/auth";
 import { hasServerSupabaseEnv } from "@/lib/supabase/env";
 
 export default async function HomePage() {
   if (hasServerSupabaseEnv()) {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user } = await getOptionalUser();
 
     if (user) {
       redirect("/dashboard");
