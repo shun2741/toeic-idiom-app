@@ -72,9 +72,11 @@ export async function selectLearnQuestion(
 
   const history = (data ?? []) as AnswerRow[];
   const metrics = buildQuestionMetrics(history);
+  const idiomMetrics = buildIdiomMetrics(metrics);
   const question = pickLearnQuestion({
     questionPool: filteredQuestionBank,
     metrics,
+    idiomMetrics,
     questionOrderMode,
     step: parseStepKey(stepKey),
   });
@@ -134,17 +136,22 @@ export async function selectReviewQuestion(
   const checkedIdiomIds = await getCheckedIdiomIds(supabase, userId);
   const { data, error, count } = await supabase
     .from("review_queue")
-    .select("question_id, due_at", { count: "exact" })
+    .select("question_id, due_at, last_judgment", { count: "exact" })
     .eq("user_id", userId)
     .lte("due_at", new Date().toISOString())
     .order("due_at", { ascending: true })
-    .limit(1);
+    .limit(20);
 
   if (error) {
     throw error;
   }
 
-  const questionId = data?.[0]?.question_id;
+  const dueRows = (data ?? []) as Array<{
+    question_id: string;
+    due_at: string;
+    last_judgment: Judgment;
+  }>;
+  const questionId = pickReviewQuestionId(dueRows);
   const question = questionId ? getQuestionById(questionId) : null;
   return {
     question,
@@ -377,6 +384,12 @@ type QuestionMetrics = {
   weakScore: number;
 };
 
+type IdiomMetrics = {
+  count: number;
+  latest: number;
+  weakScore: number;
+};
+
 function buildQuestionMetrics(history: AnswerRow[]) {
   const grouped = new Map<string, AnswerRow[]>();
 
@@ -439,6 +452,33 @@ function buildQuestionMetrics(history: AnswerRow[]) {
   return metrics;
 }
 
+function buildIdiomMetrics(metrics: Map<string, QuestionMetrics>) {
+  const idiomMetrics = new Map<string, IdiomMetrics>();
+
+  for (const [questionId, questionMetric] of metrics.entries()) {
+    const question = getQuestionById(questionId);
+    if (!question) {
+      continue;
+    }
+
+    const current = idiomMetrics.get(question.idiomId);
+
+    if (current) {
+      current.count += questionMetric.count;
+      current.latest = Math.max(current.latest, questionMetric.latest);
+      current.weakScore += questionMetric.weakScore;
+    } else {
+      idiomMetrics.set(question.idiomId, {
+        count: questionMetric.count,
+        latest: questionMetric.latest,
+        weakScore: questionMetric.weakScore,
+      });
+    }
+  }
+
+  return idiomMetrics;
+}
+
 function parseStepKey(stepKey?: string) {
   const parsed = Number.parseInt(stepKey ?? "0", 10);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
@@ -447,11 +487,13 @@ function parseStepKey(stepKey?: string) {
 function pickLearnQuestion({
   questionPool,
   metrics,
+  idiomMetrics,
   questionOrderMode,
   step,
 }: {
   questionPool: StudyQuestion[];
   metrics: Map<string, QuestionMetrics>;
+  idiomMetrics: Map<string, IdiomMetrics>;
   questionOrderMode: QuestionOrderMode;
   step: number;
 }) {
@@ -460,7 +502,10 @@ function pickLearnQuestion({
   }
 
   if (questionOrderMode === "unanswered_first") {
-    const unanswered = questionPool.filter((question) => !metrics.has(question.questionId));
+    const unanswered = rankRelatedUnansweredQuestions(
+      questionPool.filter((question) => !metrics.has(question.questionId)),
+      idiomMetrics,
+    );
 
     if (unanswered.length > 0) {
       return unanswered[step % unanswered.length];
@@ -471,15 +516,20 @@ function pickLearnQuestion({
 
   if (questionOrderMode === "weak_first") {
     const weakQuestions = [...questionPool]
-      .filter((question) => (metrics.get(question.questionId)?.weakScore ?? 0) > 0)
+      .filter(
+        (question) =>
+          getCombinedWeakScore(question, metrics, idiomMetrics) > 0,
+      )
       .sort((a, b) => {
-        const left = metrics.get(a.questionId)!;
-        const right = metrics.get(b.questionId)!;
+        const leftScore = getCombinedWeakScore(a, metrics, idiomMetrics);
+        const rightScore = getCombinedWeakScore(b, metrics, idiomMetrics);
 
-        if (left.weakScore !== right.weakScore) {
-          return right.weakScore - left.weakScore;
+        if (leftScore !== rightScore) {
+          return rightScore - leftScore;
         }
 
+        const left = metrics.get(a.questionId) ?? { count: 0, latest: 0, weakScore: 0 };
+        const right = metrics.get(b.questionId) ?? { count: 0, latest: 0, weakScore: 0 };
         return left.latest - right.latest;
       });
 
@@ -487,7 +537,10 @@ function pickLearnQuestion({
       return weakQuestions[step % weakQuestions.length];
     }
 
-    const unanswered = questionPool.filter((question) => !metrics.has(question.questionId));
+    const unanswered = rankRelatedUnansweredQuestions(
+      questionPool.filter((question) => !metrics.has(question.questionId)),
+      idiomMetrics,
+    );
     if (unanswered.length > 0) {
       return unanswered[step % unanswered.length];
     }
@@ -496,6 +549,46 @@ function pickLearnQuestion({
   }
 
   return questionPool[step % questionPool.length];
+}
+
+function getCombinedWeakScore(
+  question: StudyQuestion,
+  metrics: Map<string, QuestionMetrics>,
+  idiomMetrics: Map<string, IdiomMetrics>,
+) {
+  const questionWeak = metrics.get(question.questionId)?.weakScore ?? 0;
+  const idiomWeak = idiomMetrics.get(question.idiomId)?.weakScore ?? 0;
+  const siblingExposureBoost =
+    !metrics.has(question.questionId) && idiomWeak > 0 ? 3 : 0;
+
+  return questionWeak + idiomWeak * 2 + siblingExposureBoost;
+}
+
+function rankRelatedUnansweredQuestions(
+  unansweredQuestions: StudyQuestion[],
+  idiomMetrics: Map<string, IdiomMetrics>,
+) {
+  return [...unansweredQuestions].sort((a, b) => {
+    const left = idiomMetrics.get(a.idiomId) ?? { count: 0, latest: 0, weakScore: 0 };
+    const right = idiomMetrics.get(b.idiomId) ?? { count: 0, latest: 0, weakScore: 0 };
+
+    const leftRank = left.weakScore > 0 ? 0 : left.count > 0 ? 1 : 2;
+    const rightRank = right.weakScore > 0 ? 0 : right.count > 0 ? 1 : 2;
+
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+
+    if (left.weakScore !== right.weakScore) {
+      return right.weakScore - left.weakScore;
+    }
+
+    if (left.count !== right.count) {
+      return right.count - left.count;
+    }
+
+    return left.latest - right.latest;
+  });
 }
 
 function pickGuestQuestion({
@@ -700,8 +793,115 @@ export async function persistAnswer({
     throw reviewError;
   }
 
+  if (result.judgment !== "correct") {
+    await queueRelatedReviewQuestions({
+      supabase,
+      userId,
+      question,
+      result,
+      answerId: inserted.id,
+      dueAt: dueAt.toISOString(),
+      intervalDays,
+    });
+  }
+
   return {
     nextReviewAt: dueAt.toISOString(),
     intervalDays,
   };
+}
+
+function pickReviewQuestionId(
+  dueRows: Array<{ question_id: string; due_at: string; last_judgment: Judgment }>,
+) {
+  if (dueRows.length === 0) {
+    return null;
+  }
+
+  return [...dueRows]
+    .sort((a, b) => {
+      const left = getQuestionById(a.question_id);
+      const right = getQuestionById(b.question_id);
+      const leftPenalty = a.last_judgment === "incorrect" ? 0 : 1;
+      const rightPenalty = b.last_judgment === "incorrect" ? 0 : 1;
+
+      if (leftPenalty !== rightPenalty) {
+        return leftPenalty - rightPenalty;
+      }
+
+      if (a.due_at !== b.due_at) {
+        return a.due_at.localeCompare(b.due_at);
+      }
+
+      return (left?.questionType ?? "").localeCompare(right?.questionType ?? "");
+    })[0]
+    ?.question_id ?? null;
+}
+
+async function queueRelatedReviewQuestions({
+  supabase,
+  userId,
+  question,
+  result,
+  answerId,
+  dueAt,
+  intervalDays,
+}: {
+  supabase: SupabaseClient;
+  userId: string;
+  question: StudyQuestion;
+  result: ScoreResult;
+  answerId: string;
+  dueAt: string;
+  intervalDays: number;
+}) {
+  const siblingQuestionIds = QUESTION_BANK.filter(
+    (candidate) =>
+      candidate.idiomId === question.idiomId &&
+      candidate.questionId !== question.questionId,
+  ).map((candidate) => candidate.questionId);
+
+  if (siblingQuestionIds.length === 0) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("review_queue")
+    .select("question_id, due_at")
+    .eq("user_id", userId)
+    .in("question_id", siblingQuestionIds);
+
+  if (error) {
+    throw error;
+  }
+
+  const existingDueAt = new Map(
+    ((data ?? []) as Array<{ question_id: string; due_at: string }>).map((row) => [
+      row.question_id,
+      row.due_at,
+    ]),
+  );
+
+  const rows = siblingQuestionIds.map((questionId) => {
+    const currentDueAt = existingDueAt.get(questionId);
+
+    return {
+      user_id: userId,
+      question_id: questionId,
+      due_at:
+        currentDueAt && currentDueAt < dueAt ? currentDueAt : dueAt,
+      interval_days: intervalDays,
+      consecutive_correct: 0,
+      last_judgment: result.judgment,
+      last_answer_id: answerId,
+    };
+  });
+
+  const { error: upsertError } = await supabase.from("review_queue").upsert(rows, {
+    onConflict: "user_id,question_id",
+  });
+
+  if (upsertError) {
+    throw upsertError;
+  }
 }

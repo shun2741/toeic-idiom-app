@@ -43,7 +43,7 @@ export default async function ReviewPage() {
         <CardHeader>
           <CardTitle className="text-2xl">復習セッション</CardTitle>
           <CardDescription>
-            期日が来ている問題から順に出題します。現在の対象は {dueCount} 問で、回答形式は {labelAnswerMode(answerMode)} です。
+            期日が来ている問題から順に出題します。間違えた熟語は、英訳・和訳・例文など関連形式もあわせて復習に回ります。現在の対象は {dueCount} 問で、回答形式は {labelAnswerMode(answerMode)} です。
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
