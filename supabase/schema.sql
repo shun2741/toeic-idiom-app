@@ -65,11 +65,21 @@ create table if not exists public.llm_judgment_cache (
   unique (question_id, normalized_answer)
 );
 
+create table if not exists public.shared_question_notes (
+  question_id text primary key references public.questions(id) on delete cascade,
+  content text not null,
+  updated_by uuid references auth.users(id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists user_answers_user_id_answered_at_idx
   on public.user_answers(user_id, answered_at desc);
 
 create index if not exists review_queue_user_id_due_at_idx
   on public.review_queue(user_id, due_at asc);
+
+create index if not exists shared_question_notes_updated_at_idx
+  on public.shared_question_notes(updated_at desc);
 
 alter table public.idioms enable row level security;
 alter table public.idiom_variants enable row level security;
@@ -77,6 +87,7 @@ alter table public.questions enable row level security;
 alter table public.user_answers enable row level security;
 alter table public.review_queue enable row level security;
 alter table public.llm_judgment_cache enable row level security;
+alter table public.shared_question_notes enable row level security;
 
 drop policy if exists "idioms are readable" on public.idioms;
 create policy "idioms are readable"
@@ -122,6 +133,17 @@ create policy "authenticated users read llm cache"
 drop policy if exists "authenticated users write llm cache" on public.llm_judgment_cache;
 create policy "authenticated users write llm cache"
   on public.llm_judgment_cache for all
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+drop policy if exists "shared question notes are readable" on public.shared_question_notes;
+create policy "shared question notes are readable"
+  on public.shared_question_notes for select
+  using (true);
+
+drop policy if exists "authenticated users write shared question notes" on public.shared_question_notes;
+create policy "authenticated users write shared question notes"
+  on public.shared_question_notes for all
   using (auth.role() = 'authenticated')
   with check (auth.role() = 'authenticated');
 

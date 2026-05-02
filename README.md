@@ -95,6 +95,10 @@ OpenAI を使う場合だけ以下も設定してください。
 `[20260314_add_more_idioms_batch3.sql](/Users/shun/Desktop/codex-app/toeic-idiom-app/supabase/migrations/20260314_add_more_idioms_batch3.sql)`
 も実行してください。
 
+共有メモの「共有に反映」機能を使う場合は、さらに
+`[20260502_add_shared_question_notes.sql](/Users/shun/Desktop/codex-app/toeic-idiom-app/supabase/migrations/20260502_add_shared_question_notes.sql)`
+も実行してください。
+
 ### 4. Google ログインを有効化
 
 Supabase Dashboard で Google Provider を設定し、以下のコールバック URL を登録してください。
