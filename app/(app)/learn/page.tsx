@@ -91,7 +91,7 @@ export default async function LearnPage({
                   selectedMode={selectedAnswerMode}
                 />
                 <QuestionTypeForm
-                  description="英熟語入力、単体の和訳、例文の和訳、例文の英訳を切り替えられます。"
+                  description="英熟語入力、単体の和訳、例文の和訳、例文の英訳、TOEIC No.5 を切り替えられます。"
                   selectedType={selectedQuestionType}
                 />
                 <QuestionOrderForm
@@ -138,7 +138,7 @@ export default async function LearnPage({
               selectedMode={selectedAnswerMode}
             />
             <QuestionTypeForm
-              description="英熟語入力、単体の和訳、例文の和訳、例文の英訳を切り替えられます。"
+              description="英熟語入力、単体の和訳、例文の和訳、例文の英訳、TOEIC No.5 を切り替えられます。"
               selectedType={selectedQuestionType}
             />
             <QuestionOrderForm

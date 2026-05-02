@@ -2,6 +2,7 @@ import { ADDITIONAL_IDIOMS_20260314_BATCH3 } from "@/lib/data/idiom-expansion-20
 import { ADDITIONAL_IDIOMS_20260314_BATCH2 } from "@/lib/data/idiom-expansion-20260314-batch2";
 import { ADDITIONAL_IDIOMS_20260314 } from "@/lib/data/idiom-expansion-20260314";
 import { IDIOM_SUPPORT } from "@/lib/data/idiom-support";
+import { READING_NO5_BANK } from "@/lib/data/reading-no5";
 import type { IdiomSeed, StudyQuestion } from "@/lib/types";
 
 export const IDIOM_BANK: IdiomSeed[] = [
@@ -414,6 +415,7 @@ export const QUESTION_BANK: StudyQuestion[] = [
       };
     },
   ),
+  ...READING_NO5_BANK,
 ];
 
 export function getQuestionById(questionId: string) {

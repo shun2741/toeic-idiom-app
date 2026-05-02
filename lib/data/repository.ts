@@ -652,6 +652,10 @@ export function buildChoiceOptions(
   question: StudyQuestion,
   questionPool: StudyQuestion[],
 ) {
+  if (question.choiceOptions?.length) {
+    return question.choiceOptions;
+  }
+
   const candidates = questionPool.filter(
     (candidate) =>
       candidate.questionId !== question.questionId &&

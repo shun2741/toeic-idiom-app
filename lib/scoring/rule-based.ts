@@ -80,6 +80,10 @@ export function scoreWithRules(
     return scoreSentenceTranslationToEnglishWithRules(question, submittedAnswer);
   }
 
+  if (question.questionType === "reading_no5") {
+    return scoreReadingNo5WithRules(question, submittedAnswer);
+  }
+
   if (question.questionType === "idiom_to_ja") {
     return scoreJapaneseTranslationWithRules(question, submittedAnswer);
   }
@@ -201,6 +205,48 @@ export function scoreWithRules(
     false,
     `不正解です。正答は「${question.correctAnswer}」です。`,
     ["different_expression"],
+  );
+}
+
+function scoreReadingNo5WithRules(
+  question: StudyQuestion,
+  submittedAnswer: string,
+): RuleScoreResult {
+  const normalizedAnswer = normalizeAnswer(submittedAnswer);
+  const accepted = Array.from(
+    new Set([question.correctAnswer, ...question.acceptedAnswers].map(normalizeAnswer)),
+  );
+
+  if (!normalizedAnswer) {
+    return buildIncorrectResult(
+      question,
+      normalizedAnswer,
+      false,
+      "未回答です。空所に最も自然に入る選択肢を選びましょう。",
+      ["blank_answer"],
+    );
+  }
+
+  if (accepted.includes(normalizedAnswer)) {
+    return {
+      isCorrect: true,
+      score: 1,
+      judgment: "correct",
+      correctAnswer: question.correctAnswer,
+      feedbackJa: "正解です。文法と語法の両面で自然に入っています。",
+      errorTags: [],
+      normalizedAnswer,
+      shouldEscalate: false,
+      source: "rule",
+    };
+  }
+
+  return buildIncorrectResult(
+    question,
+    normalizedAnswer,
+    false,
+    `不正解です。正答は「${question.correctAnswer}」です。`,
+    ["different_choice"],
   );
 }
 

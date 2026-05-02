@@ -31,7 +31,7 @@ export function QuestionTypeForm({
         <p className="text-sm font-semibold text-slate-950">出題形式</p>
         <p className="text-sm leading-6 text-slate-600">
           {description ??
-            "通常学習で使う問題形式を選びます。単体問題に加えて、例文の和訳と英訳も選べます。"}
+            "通常学習で使う問題形式を選びます。熟語問題に加えて、TOEIC No.5 の空所補充にも切り替えられます。"}
         </p>
       </div>
 

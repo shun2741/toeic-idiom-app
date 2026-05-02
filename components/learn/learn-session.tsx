@@ -74,6 +74,10 @@ function resultEffectClassName(judgment: Judgment) {
 }
 
 function answerPlaceholder(question: StudyQuestion) {
+  if (question.questionType === "reading_no5") {
+    return "No.5 は選択式で回答します";
+  }
+
   if (question.questionType === "ja_to_idiom") {
     return "例: put off";
   }
@@ -151,6 +155,8 @@ export function LearnSession({
   const [isSubmitting, startSubmitting] = useTransition();
   const [isMoving, startMoving] = useTransition();
   const [isTogglingCheck, startTogglingCheck] = useTransition();
+  const effectiveAnswerMode =
+    question.questionType === "reading_no5" ? "multiple_choice" : answerMode;
 
   useEffect(() => {
     setAnswer("");
@@ -264,7 +270,7 @@ export function LearnSession({
           </div>
         </CardHeader>
         <CardContent>
-          {answerMode === "free_text" ? (
+          {effectiveAnswerMode === "free_text" ? (
             <form className="space-y-4" onSubmit={handleSubmit}>
               <Input
                 autoComplete="off"
@@ -278,6 +284,10 @@ export function LearnSession({
               {question.questionType === "sentence_ja_to_en" ? (
                 <p className="text-sm text-slate-500">
                   スマホでは英語キーボードのマイクから音声入力も使えます。
+                </p>
+              ) : question.questionType === "reading_no5" ? (
+                <p className="text-sm text-slate-500">
+                  TOEIC No.5 は選択式で解く形式です。選択肢から最も自然なものを選びます。
                 </p>
               ) : question.questionType !== "ja_to_idiom" ? (
                 <p className="text-sm text-slate-500">
@@ -429,7 +439,9 @@ export function LearnSession({
                     {judgmentLabel(result.result.judgment)}
                   </Badge>
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-current opacity-70">正答</p>
+                    <p className="text-sm font-semibold text-current opacity-70">
+                      {question.questionType === "reading_no5" ? "正解の選択肢" : "正答"}
+                    </p>
                     <p className="text-2xl font-bold">{result.result.correctAnswer}</p>
                   </div>
                   <p className="text-sm font-semibold text-current opacity-70">
@@ -476,19 +488,23 @@ export function LearnSession({
                 <div className="space-y-4 border-t border-border px-4 py-4 text-sm leading-7 text-slate-700">
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="rounded-2xl border border-border bg-slate-50 p-4">
-                      <p className="text-sm font-semibold text-slate-950">例文</p>
+                      <p className="text-sm font-semibold text-slate-950">
+                        {question.questionType === "reading_no5" ? "類題メモ" : "例文"}
+                      </p>
                       <p className="mt-2 text-slate-900">{question.exampleEn}</p>
                       <p className="mt-2 text-slate-600">{question.exampleJa}</p>
                     </div>
                     <div className="rounded-2xl border border-border bg-slate-50 p-4">
-                      <p className="text-sm font-semibold text-slate-950">定着ポイント</p>
+                      <p className="text-sm font-semibold text-slate-950">
+                        {question.questionType === "reading_no5" ? "選ぶポイント" : "定着ポイント"}
+                      </p>
                       <p className="mt-2">よく一緒に出る語: {question.collocationHintJa}</p>
                       <p className="mt-2">間違えやすい点: {question.commonMistakeJa}</p>
                     </div>
                   </div>
                   <div className="rounded-2xl border border-border bg-slate-50 p-4">
-                    <p>英熟語: {question.sourceExpression}</p>
-                    <p>意味: {question.sourceMeaningJa}</p>
+                    <p>{question.questionType === "reading_no5" ? "出題ポイント" : "英熟語"}: {question.sourceExpression}</p>
+                    <p>{question.questionType === "reading_no5" ? "正解の形" : "意味"}: {question.sourceMeaningJa}</p>
                     <p>解説: {question.explanationJa}</p>
                   </div>
                   {guestMode ? (

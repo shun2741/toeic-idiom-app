@@ -99,6 +99,10 @@ OpenAI を使う場合だけ以下も設定してください。
 `[20260502_add_shared_question_notes.sql](/Users/shun/Desktop/codex-app/toeic-idiom-app/supabase/migrations/20260502_add_shared_question_notes.sql)`
 も実行してください。
 
+TOEIC No.5 の空所補充問題を使う場合は、さらに
+`[20260502_add_reading_no5_questions.sql](/Users/shun/Desktop/codex-app/toeic-idiom-app/supabase/migrations/20260502_add_reading_no5_questions.sql)`
+も実行してください。
+
 ### 4. Google ログインを有効化
 
 Supabase Dashboard で Google Provider を設定し、以下のコールバック URL を登録してください。

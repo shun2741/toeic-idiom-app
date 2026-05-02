@@ -4,7 +4,8 @@ export type QuestionType =
   | "ja_to_idiom"
   | "idiom_to_ja"
   | "sentence_to_ja"
-  | "sentence_ja_to_en";
+  | "sentence_ja_to_en"
+  | "reading_no5";
 export type AnswerMode = "free_text" | "multiple_choice";
 export type QuestionSourceMode = "all" | "checked_only";
 export type QuestionOrderMode =
@@ -49,6 +50,7 @@ export type StudyQuestion = {
   collocationHintJa: string;
   commonMistakeJa: string;
   levelBand: LevelBand;
+  choiceOptions?: string[];
 };
 
 export type ScoreResult = {

@@ -6,6 +6,7 @@ export const QUESTION_TYPES: QuestionType[] = [
   "idiom_to_ja",
   "sentence_to_ja",
   "sentence_ja_to_en",
+  "reading_no5",
 ];
 
 export function normalizeQuestionType(input: string | undefined | null): QuestionType {
@@ -32,6 +33,10 @@ export function labelQuestionType(questionType: QuestionType) {
 
   if (questionType === "sentence_ja_to_en") {
     return "例文英訳";
+  }
+
+  if (questionType === "reading_no5") {
+    return "TOEIC No.5";
   }
 
   return "和訳入力";
